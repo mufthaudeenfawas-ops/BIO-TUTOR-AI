@@ -1,0 +1,664 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BioTutor AI — Version 2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f8f5;color:#173b25}
+header{background:linear-gradient(135deg,#087f46,#19a463);color:white;padding:28px 18px;text-align:center}
+header h1{margin:0;font-size:32px}header p{margin:8px 0}.wrap{max-width:1050px;margin:auto;padding:18px}
+.search{width:100%;padding:15px;border:1px solid #cbd8cf;border-radius:12px;font-size:16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tab{border:0;border-radius:10px;padding:11px 16px;background:#dcebe1;color:#174e2c;font-weight:700}.active{background:#087f46;color:white}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px}.card{background:white;border:1px solid #d8e5dc;border-radius:14px;padding:16px;cursor:pointer;box-shadow:0 3px 12px #17351f10}
+.badge{font-size:12px;background:#e5f5eb;color:#087f46;padding:5px 8px;border-radius:20px}.card h3{margin:10px 0 6px;font-size:17px}.muted{color:#66766d;font-size:13px}
+.panel{display:none;background:white;border-radius:16px;padding:20px;border:1px solid #d8e5dc}.panel.show{display:block}
+.back{border:0;background:#173b25;color:white;padding:10px 14px;border-radius:9px;margin-bottom:14px;font-weight:700}
+.section{background:#f5faf6;padding:15px;border-radius:12px;margin:14px 0}.key{display:inline-block;background:white;border:1px solid #d8e5dc;padding:8px 10px;border-radius:9px;margin:4px;font-size:14px}
+.quizq{padding:14px;border:1px solid #e0e8e2;border-radius:12px;margin:10px 0}.quizq button{display:block;width:100%;text-align:left;margin:7px 0;padding:10px;border:1px solid #d5dfd8;border-radius:8px;background:white}.quizq button:hover{background:#eef8f1}
+.ask{border-top:1px solid #dfe8e2;margin-top:20px;padding-top:18px}.ask input{width:76%;padding:12px;border:1px solid #cbd8cf;border-radius:9px}.ask button,.primary{padding:12px 15px;border:0;border-radius:9px;background:#087f46;color:white;font-weight:700}
+.answer{margin-top:10px;background:#eef8f1;padding:13px;border-radius:10px}
+.score{font-weight:700;font-size:18px;margin-top:12px}footer{text-align:center;color:#718177;padding:25px}
+</style>
+<style id="v3-css">
+.progress-card{background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 24px rgba(15,118,110,.18)}
+.progress-bar{height:10px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;margin-top:10px}.progress-fill{height:100%;background:#fff;border-radius:99px;width:0;transition:.3s}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.stat{background:rgba(255,255,255,.12);padding:10px;border-radius:12px;text-align:center}.stat b{display:block;font-size:20px}
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.action-btn{border:0;border-radius:12px;padding:10px 13px;background:#e6fffb;color:#115e59;font-weight:700;cursor:pointer}
+.flashcard{min-height:210px;display:flex;align-items:center;justify-content:center;text-align:center;background:#fff;border:2px solid #ccfbf1;border-radius:20px;padding:24px;font-size:20px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.06);cursor:pointer}
+.quiz-score{font-size:18px;font-weight:800;margin:10px 0}.answer-btn{display:block;width:100%;text-align:left;border:1px solid #ddd;background:#fff;padding:12px;border-radius:10px;margin:8px 0;cursor:pointer}.answer-btn.correct{background:#dcfce7;border-color:#22c55e}.answer-btn.wrong{background:#fee2e2;border-color:#ef4444}
+.ai-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:15px;margin-top:12px}.ai-msg{margin:8px 0;padding:10px 12px;border-radius:12px;background:#fff}.ai-msg.user{background:#ccfbf1}
+</style>
+
+<style id="v4-css">
+.v4-dashboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.v4-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:15px;box-shadow:0 5px 18px rgba(0,0,0,.05)}
+.v4-card h3{margin:0 0 8px}.v4-big{font-size:28px;font-weight:800}
+.v4-nav{display:flex;gap:8px;overflow:auto;padding:6px 0;margin-bottom:10px}
+.v4-nav button{white-space:nowrap;border:0;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:700}
+.v4-topic-list{display:grid;gap:8px}.v4-topic{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+.v4-topic input{width:18px;height:18px}.v4-topic span{flex:1}
+.exam-choice{width:100%;padding:12px;margin:6px 0;border:1px solid #d1d5db;background:#fff;border-radius:11px;text-align:left;cursor:pointer}
+.exam-choice:disabled{cursor:default}.exam-choice.v4-correct{background:#dcfce7;border-color:#22c55e}.exam-choice.v4-wrong{background:#fee2e2;border-color:#ef4444}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#ecfeff;font-size:12px;font-weight:700}
+@media(max-width:600px){.v4-dashboard{grid-template-columns:1fr}}
+</style>
+
+<style id="v5-css">
+.v5-hero{background:linear-gradient(135deg,#111827,#0f766e);color:#fff;border-radius:20px;padding:20px;margin:14px 0}
+.v5-hero h2{margin:0 0 6px}.v5-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.v5-box{background:#fff;border:1px solid #e5e7eb;border-radius:15px;padding:14px}.v5-box h3{margin:0 0 7px}
+.v5-btn{border:0;border-radius:11px;padding:10px 13px;font-weight:700;cursor:pointer;margin:4px 3px 4px 0}
+.v5-primary{background:#ccfbf1;color:#115e59}.v5-dark{background:#111827;color:#fff}
+.v5-select,.v5-input{padding:10px;border:1px solid #d1d5db;border-radius:10px;width:100%;box-sizing:border-box;margin:5px 0 9px}
+.v5-option{display:block;width:100%;text-align:left;padding:12px;margin:7px 0;border:1px solid #d1d5db;border-radius:11px;background:#fff;cursor:pointer}
+.v5-option.correct{background:#dcfce7;border-color:#22c55e}.v5-option.wrong{background:#fee2e2;border-color:#ef4444}
+.v5-timer{font-size:22px;font-weight:800}.v5-score{font-size:34px;font-weight:900}.v5-review{padding:11px;border:1px solid #e5e7eb;border-radius:11px;margin:8px 0;background:#fafafa}
+@media(max-width:600px){.v5-grid{grid-template-columns:1fr}}
+</style>
+
+<style id="v6-css">
+.v6-shell{margin:14px 0}.v6-tabs{display:flex;gap:7px;overflow:auto;margin-bottom:10px}.v6-tabs button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;white-space:nowrap}
+.v6-panel{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.05)}
+.v6-topic{padding:13px;border:1px solid #e5e7eb;border-radius:13px;margin:8px 0}.v6-topic button{border:0;background:transparent;text-align:left;width:100%;font-weight:750;cursor:pointer}
+.v6-progress{height:9px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:8px 0}.v6-progress i{display:block;height:100%;width:0;background:#0f766e}
+.v6-lesson{line-height:1.65}.v6-lesson h3{margin-top:18px}.v6-chip{display:inline-block;padding:5px 9px;border-radius:999px;background:#ecfeff;margin:3px;font-size:12px;font-weight:700}
+.v6-search{width:100%;box-sizing:border-box;padding:12px;border:1px solid #d1d5db;border-radius:12px;margin-bottom:10px}
+.v6-history{padding:10px;border:1px solid #e5e7eb;border-radius:11px;margin:7px 0}
+.v6-empty{text-align:center;padding:20px;color:#6b7280}
+@media(max-width:600px){.v6-panel{padding:12px}}
+</style>
+<link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#0b1220"></head><body>
+<div id="v3-tools" class="progress-card">
+  <div><strong>🧬 My Biology Progress</strong></div>
+  <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+  <div class="stat-grid">
+    <div class="stat"><b id="completedCount">0</b>Topics</div>
+    <div class="stat"><b id="quizScoreTotal">0</b>Quiz pts</div>
+    <div class="stat"><b id="streakCount">0</b>Streak</div>
+  </div>
+  <div class="action-row">
+    <button class="action-btn" onclick="openRandomFlashcard()">🃏 Flashcards</button>
+    <button class="action-btn" onclick="openQuickQuiz()">📝 Quick Quiz</button>
+    <button class="action-btn" onclick="resetProgress()">♻️ Reset Progress</button>
+  </div>
+</div>
+<div id="v3Panel"></div>
+<section id="v4-dashboard" class="v4-card">
+  <h2>🚀 BioTutor AI — Study Dashboard</h2>
+  <div class="v4-dashboard">
+    <div class="v4-card"><span class="badge">TOPICS</span><div id="v4Topics" class="v4-big">0/43</div><small>Topics completed</small></div>
+    <div class="v4-card"><span class="badge">QUIZ</span><div id="v4Points" class="v4-big">0</div><small>Quiz points</small></div>
+  </div>
+  <div class="v4-nav">
+    <button onclick="v4Show('checklist')">✅ My Topics</button>
+    <button onclick="v4Show('exam')">🎯 Exam Mode</button>
+    <button onclick="v4Show('tutor')">🤖 Tutor</button>
+  </div>
+  <div id="v4Area"></div>
+</section>
+<section id="v5-exam" class="v5-hero">
+  <h2>🎓 WAEC / NECO Practice Centre</h2>
+  <div>Build exam confidence with timed Biology practice.</div>
+  <div class="v5-grid">
+    <div class="v5-box">
+      <h3>📝 Start Practice</h3>
+      <label>Number of questions</label>
+      <select id="v5Count" class="v5-select">
+        <option value="10">10 questions</option>
+        <option value="20">20 questions</option>
+        <option value="30">30 questions</option>
+        <option value="50">50 questions</option>
+      </select>
+      <button class="v5-btn v5-primary" onclick="v5Start()">🚀 Start Exam</button>
+    </div>
+    <div class="v5-box">
+      <h3>⏱️ Exam Timer</h3>
+      <div id="v5Timer" class="v5-timer">Ready</div>
+      <small>Use practice questions to test what you know.</small>
+    </div>
+  </div>
+  <div id="v5ExamArea"></div>
+</section>
+<section id="v6-app" class="v6-shell">
+  <div class="v6-tabs">
+    <button onclick="v6Class('SSS1')">📘 SSS1</button>
+    <button onclick="v6Class('SSS2')">📗 SSS2</button>
+    <button onclick="v6Class('SSS3')">📕 SSS3</button>
+    <button onclick="v6ShowBookmarks()">🔖 Saved</button>
+    <button onclick="v6ShowHistory()">📊 History</button>
+  </div>
+  <div class="v6-panel">
+    <input id="v6Search" class="v6-search" placeholder="🔎 Search Biology topics..." oninput="v6RenderList()">
+    <div id="v6List"></div>
+    <div id="v6Detail"></div>
+  </div>
+</section>
+
+
+
+
+
+<section id="diagram-lab" class="diagram-lab"><h2>🧬 Biology Diagram Lab</h2><p class="diagram-note">Major school Biology diagrams for humans, animals, plants and cells. Study the labels, then practise drawing them below.</p><div id="diagramGrid" class="diagram-grid"></div><div class="draw-box"><h3>✍🏾 Draw & Label Practice</h3><p class="diagram-note">Use your finger to draw on the blank board.</p><canvas id="drawCanvas" class="draw-canvas"></canvas><div class="draw-tools"><button onclick="clearDraw()">🗑️ Clear</button><button onclick="toggleEraser()">🧽 Eraser</button></div></div></section>
+
+<section id="v7-product" class="v7-shell">
+  <div class="v7-hero">
+    <div>
+      <span class="v7-badge">V7 • PRODUCT EDITION</span>
+      <h2>🚀 BioTutor AI — Learn Smarter</h2>
+      <p>Study Biology, practise for exams, track progress and unlock advanced learning tools.</p>
+    </div>
+    <div class="v7-free-tag">FREE PLAN</div>
+  </div>
+
+  <div class="v7-stats">
+    <div><b id="v7TopicsDone">0</b><span>Topics studied</span></div>
+    <div><b id="v7QuizPts">0</b><span>Quiz points</span></div>
+    <div><b id="v7Streak">0</b><span>Study streak</span></div>
+  </div>
+
+  <div class="v7-grid">
+    <div class="v7-card">
+      <div class="v7-icon">📚</div>
+      <h3>Free Learning</h3>
+      <p>Access the Biology topic library, basic lessons, bookmarks and progress tracking.</p>
+      <button class="v7-btn" onclick="v7GoTo('v6-app')">Start Learning</button>
+    </div>
+
+    <div class="v7-card v7-premium">
+      <div class="v7-lock">🔒 PREMIUM</div>
+      <div class="v7-icon">🎓</div>
+      <h3>Premium Study Pack</h3>
+      <p>Prepare the paid version for advanced practice, deeper explanations and extra study tools.</p>
+      <ul>
+        <li>Advanced exam practice</li>
+        <li>Detailed answer explanations</li>
+        <li>Extra revision tools</li>
+        <li>Priority future features</li>
+      </ul>
+      <button class="v7-btn v7-premium-btn" onclick="v7PremiumInfo()">View Premium</button>
+    </div>
+
+    <div class="v7-card">
+      <div class="v7-icon">📱</div>
+      <h3>Install BioTutor</h3>
+      <p>Make BioTutor AI installable on compatible phones and computers as a web app.</p>
+      <button id="v7InstallBtn" class="v7-btn" onclick="v7Install()">Install App</button>
+      <small id="v7InstallNote">Install option appears when your browser supports it.</small>
+    </div>
+  </div>
+
+  <div class="v7-notice">
+    <b>💡 Building this into a real product</b>
+    <span>Payments and advertising are not activated in this offline file. They can be connected later with a proper payment provider and accounts that meet the provider's age and identity requirements.</span>
+  </div>
+
+  <div id="v7PremiumModal" class="v7-modal" hidden>
+    <div class="v7-modal-box">
+      <button class="v7-close" onclick="v7CloseModal()">×</button>
+      <h2>🔒 Premium Study Pack</h2>
+      <p>This is the premium area we are preparing for BioTutor AI.</p>
+      <div class="v7-price">Coming soon</div>
+      <p class="v7-muted">No payment is taken from this HTML file. The next product stage can connect a real checkout system.</p>
+      <button class="v7-btn" onclick="v7CloseModal()">Continue Studying</button>
+    </div>
+  </div>
+</section>
+
+<style>
+.v7-shell{margin:18px auto;max-width:1100px;padding:20px;border-radius:22px;background:linear-gradient(135deg,#071f16,#0d5b3a);color:#fff;box-shadow:0 14px 35px rgba(0,0,0,.16)}
+.v7-hero{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:8px 4px 20px}
+.v7-hero h2{margin:8px 0 6px;font-size:28px}.v7-hero p{margin:0;opacity:.88;line-height:1.5}
+.v7-badge,.v7-lock,.v7-free-tag{display:inline-block;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.4px;background:rgba(255,255,255,.14)}
+.v7-free-tag{background:#fff;color:#0d5b3a}
+.v7-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 18px}
+.v7-stats div{padding:15px;border:1px solid rgba(255,255,255,.14);border-radius:15px;background:rgba(255,255,255,.08);text-align:center}
+.v7-stats b{display:block;font-size:25px}.v7-stats span{font-size:12px;opacity:.8}
+.v7-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.v7-card{background:#fff;color:#10251c;border-radius:18px;padding:20px;position:relative;min-height:220px;box-sizing:border-box}
+.v7-card h3{margin:7px 0}.v7-card p{line-height:1.5;color:#42534b}.v7-icon{font-size:30px}
+.v7-card ul{padding-left:20px;color:#42534b;line-height:1.8;font-size:14px}
+.v7-premium{border:2px solid #d5ad45}.v7-lock{position:absolute;right:14px;top:14px;background:#fff3c4;color:#6d5200}
+.v7-btn{border:0;border-radius:11px;padding:11px 15px;background:#087f46;color:#fff;font-weight:800;cursor:pointer}
+.v7-premium-btn{background:#6d5200}.v7-card small{display:block;margin-top:10px;color:#65746d}
+.v7-notice{margin-top:14px;padding:14px 16px;border-radius:15px;background:rgba(255,255,255,.1);display:flex;gap:10px;flex-direction:column;font-size:13px;line-height:1.5}
+.v7-modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:grid;place-items:center;padding:18px;z-index:9999}
+.v7-modal[hidden]{display:none}.v7-modal-box{background:#fff;color:#16251e;max-width:430px;width:100%;border-radius:20px;padding:25px;position:relative}
+.v7-close{position:absolute;right:12px;top:8px;border:0;background:transparent;font-size:30px;cursor:pointer}
+.v7-price{font-size:22px;font-weight:900;margin:18px 0}.v7-muted{color:#637069;font-size:13px;line-height:1.5}
+@media(max-width:760px){.v7-grid{grid-template-columns:1fr}.v7-hero{flex-direction:column;align-items:flex-start}.v7-stats{grid-template-columns:1fr 1fr 1fr}.v7-shell{margin:10px;padding:14px}}
+</style>
+<style id="diagram-lab-css">.diagram-lab{margin:18px 0;padding:18px;border-radius:18px;background:#f7faf8;border:1px solid #dfe9e3}.diagram-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.diagram-card{background:#fff;border:1px solid #e3e8e5;border-radius:16px;padding:12px}.diagram-card h3{margin:4px 0 8px}.diagram-svg{width:100%;height:270px;border-radius:12px;background:#fbfcfb}.diagram-label{font-size:13px;line-height:1.45;color:#53615a}.draw-box{background:#fff;border:1px solid #e3e8e5;border-radius:16px;padding:12px;margin-top:14px}.draw-canvas{width:100%;height:300px;border:2px dashed #9aa9a1;border-radius:12px;background:#fff;touch-action:none}.draw-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.draw-tools button{padding:9px 12px;border:0;border-radius:10px;cursor:pointer}.diagram-note{font-size:13px;color:#5e6b65;margin:6px 0 12px}@media(max-width:650px){.diagram-grid{grid-template-columns:1fr}}</style>
+<header><h1>🧬 BioTutor AI</h1><p>Learn Biology • Practise • Improve</p></header>
+<div class="wrap">
+<input id="search" class="search" placeholder="🔍 Search any Biology topic...">
+<div class="tabs">
+<button class="tab active" onclick="setClass('ALL',this)">All Topics</button>
+<button class="tab" onclick="setClass('SSS1',this)">SSS 1</button>
+<button class="tab" onclick="setClass('SSS2',this)">SSS 2</button>
+<button class="tab" onclick="setClass('SSS3',this)">SSS 3</button></div>
+<div id="list" class="grid"></div><div id="panel" class="panel"></div>
+<footer>BioTutor AI V2 • 43 Biology topics</footer></div>
+<script>
+const topics=[{"class": "SSS1", "topic": "Recognising Living Things"}, {"class": "SSS1", "topic": "Classification of Living Things"}, {"class": "SSS1", "topic": "The Cell"}, {"class": "SSS1", "topic": "The Cell and Its Environment"}, {"class": "SSS1", "topic": "Some Properties and Functions of the Cell"}, {"class": "SSS1", "topic": "Plant Nutrition"}, {"class": "SSS1", "topic": "Nutrition in Animals"}, {"class": "SSS1", "topic": "Tissues and Supporting Systems"}, {"class": "SSS1", "topic": "Basic Ecological Concepts"}, {"class": "SSS1", "topic": "Functioning Ecosystem"}, {"class": "SSS1", "topic": "Energy Transformation in Nature"}, {"class": "SSS1", "topic": "Relevance of Biology to Agriculture"}, {"class": "SSS1", "topic": "Micro-organisms Around Us"}, {"class": "SSS1", "topic": "Micro-organisms in Action"}, {"class": "SSS1", "topic": "Micro-organisms and Better Health"}, {"class": "SSS1", "topic": "Aquatic Habitats"}, {"class": "SSS1", "topic": "Terrestrial Habitats"}, {"class": "SSS1", "topic": "Reproduction in Unicellular Organisms and Invertebrates"}, {"class": "SSS2", "topic": "Classification of Plants"}, {"class": "SSS2", "topic": "Digestive Systems"}, {"class": "SSS2", "topic": "Transport Systems"}, {"class": "SSS2", "topic": "Respiratory Systems"}, {"class": "SSS2", "topic": "Excretory Systems"}, {"class": "SSS2", "topic": "Nutrient Cycling in Nature"}, {"class": "SSS2", "topic": "Ecological Management"}, {"class": "SSS2", "topic": "Conservation of Natural Resources"}, {"class": "SSS2", "topic": "Pests and Diseases of Crops"}, {"class": "SSS2", "topic": "Reproductive Systems in Vertebrates"}, {"class": "SSS2", "topic": "Reproductive Systems in Plants"}, {"class": "SSS2", "topic": "Pollination in Plants"}, {"class": "SSS3", "topic": "Regulation of Internal Environment"}, {"class": "SSS3", "topic": "Nervous Co-ordination"}, {"class": "SSS3", "topic": "Sense Organs"}, {"class": "SSS3", "topic": "Ecology of Population"}, {"class": "SSS3", "topic": "Balance in Nature"}, {"class": "SSS3", "topic": "Reproductive Systems and Reproduction in Humans"}, {"class": "SSS3", "topic": "Development of New Seeds"}, {"class": "SSS3", "topic": "Fruits"}, {"class": "SSS3", "topic": "Reproductive Behaviours"}, {"class": "SSS3", "topic": "Biology of Heredity (Genetics)"}, {"class": "SSS3", "topic": "Variation and Evolution"}, {"class": "SSS3", "topic": "Adaptation for Survival"}, {"class": "SSS3", "topic": "Evolution"}], lessons={"Recognising Living Things": ["Living things are organisms that carry out life processes. Common characteristics include nutrition, respiration, movement, growth, reproduction, excretion, sensitivity and the ability to respond to stimuli.", "Life processes; response to stimuli; reproduction"], "Classification of Living Things": ["Classification is the grouping of organisms according to similarities and differences. It helps scientists identify organisms and study their relationships. Organisms can be arranged into hierarchical groups.", "Kingdoms and groups; similarities; identification"], "The Cell": ["The cell is the basic structural and functional unit of living organisms. Cells contain structures such as the cell membrane, cytoplasm and genetic material. Plant cells also have a cell wall, chloroplasts and a large vacuole.", "Cell theory; organelles; plant vs animal cells"], "The Cell and Its Environment": ["Cells exchange substances with their surroundings. Diffusion is movement of particles from higher to lower concentration, while osmosis is movement of water through a selectively permeable membrane.", "Diffusion; osmosis; concentration gradient"], "Some Properties and Functions of the Cell": ["Cell structures work together to keep the cell alive. The nucleus contains genetic material, mitochondria release energy during aerobic respiration, ribosomes make proteins, and membranes regulate movement of substances.", "Cell organelles; functions; cell organisation"], "Plant Nutrition": ["Green plants are mainly autotrophic because they manufacture food by photosynthesis. Chlorophyll absorbs light energy, while carbon dioxide and water provide raw materials for making glucose.", "Photosynthesis; chlorophyll; mineral nutrients"], "Nutrition in Animals": ["Animals are heterotrophic and obtain nutrients by feeding on other organisms or their products. Food provides energy, materials for growth and substances needed for body functions.", "Nutrients; balanced diet; digestion"], "Tissues and Supporting Systems": ["A tissue is a group of similar cells performing a particular function. Plants and animals have specialised tissues and supporting structures that help maintain shape and carry out functions.", "Specialisation; tissues; support"], "Basic Ecological Concepts": ["Ecology is the study of relationships between organisms and their environment. Important terms include habitat, population, community, ecosystem, biotic factors and abiotic factors.", "Habitat; population; ecosystem"], "Functioning Ecosystem": ["An ecosystem consists of living organisms interacting with one another and with non-living factors. Producers capture energy, consumers obtain energy by feeding, and decomposers recycle materials.", "Producers; consumers; decomposers"], "Energy Transformation in Nature": ["Energy is transformed from one form to another. In ecosystems, light energy is captured by plants during photosynthesis and transferred through feeding, while some energy is lost as heat.", "Photosynthesis; food chains; energy loss"], "Relevance of Biology to Agriculture": ["Biology helps agriculture through knowledge of crops, animals, pests, diseases, soil organisms, breeding and environmental management. This knowledge can improve production and sustainability.", "Crop production; animal production; pest management"], "Micro-organisms Around Us": ["Microorganisms are very small organisms or biological agents, including bacteria, fungi, protozoa, microscopic algae and viruses. They are found in many environments and can be useful or harmful.", "Types; habitats; useful and harmful effects"], "Micro-organisms in Action": ["Microorganisms carry out processes such as decomposition and fermentation. Some are used in food production and biotechnology, while others cause spoilage and disease.", "Decomposition; fermentation; biotechnology"], "Micro-organisms and Better Health": ["Some microorganisms cause infectious diseases, while others are useful to humans. Good hygiene, safe water, vaccination and appropriate medical care help reduce the spread and impact of infectious diseases.", "Pathogens; prevention; beneficial microbes"], "Aquatic Habitats": ["Aquatic habitats include freshwater and marine environments. Factors such as light, temperature, salinity, oxygen and water movement affect the organisms that live there.", "Freshwater; marine; aquatic adaptations"], "Terrestrial Habitats": ["Terrestrial habitats occur on land and include forests, grasslands, deserts and other environments. Organisms show structural and behavioural adaptations to local conditions.", "Forest; grassland; desert"], "Reproduction in Unicellular Organisms and Invertebrates": ["Many unicellular organisms reproduce asexually by processes such as binary fission or budding. Invertebrates show diverse reproductive methods, including sexual and asexual reproduction.", "Asexual reproduction; sexual reproduction; examples"], "Classification of Plants": ["Plants can be classified using characteristics such as vascular tissues, seeds and reproductive structures. Major groups include non-vascular plants, seedless vascular plants and seed plants.", "Vascular tissue; seeds; plant groups"], "Digestive Systems": ["Digestion breaks large, insoluble food molecules into smaller soluble molecules that can be absorbed and used. The alimentary canal and associated organs carry out mechanical and chemical digestion.", "Digestion; enzymes; absorption"], "Transport Systems": ["Transport systems distribute materials around organisms. In flowering plants, xylem transports water and mineral salts while phloem transports organic nutrients. Animals use blood and vessels.", "Xylem; phloem; blood"], "Respiratory Systems": ["Respiration is the controlled release of energy from food. Gas exchange supplies oxygen and removes carbon dioxide; specialised respiratory surfaces are thin and have a large surface area.", "Aerobic respiration; gas exchange; respiratory surfaces"], "Excretory Systems": ["Excretion removes metabolic waste from the body. Human kidneys remove nitrogenous wastes and help regulate water and salts; the lungs remove carbon dioxide and water vapour.", "Excretion; kidneys; homeostasis"], "Nutrient Cycling in Nature": ["Nutrients move continuously between organisms and the environment. Decomposers return mineral nutrients to soil, while processes such as nitrogen fixation help make nitrogen available to organisms.", "Carbon cycle; nitrogen cycle; decomposers"], "Ecological Management": ["Ecological management involves using knowledge of ecosystems to protect resources, reduce environmental damage and maintain healthy populations and habitats.", "Sustainable use; pollution control; habitat management"], "Conservation of Natural Resources": ["Conservation is the careful protection and management of natural resources such as soil, forests, water and wildlife. It aims to meet present needs while maintaining resources for the future.", "Renewable resources; sustainable use; biodiversity"], "Pests and Diseases of Crops": ["Crop pests damage plants directly or reduce yield, while crop diseases are caused by pathogens or other harmful agents. Control methods include cultural, biological and carefully managed chemical approaches.", "Pests; pathogens; integrated control"], "Reproductive Systems in Vertebrates": ["Vertebrates have reproductive organs specialised for producing gametes, enabling fertilisation and development of offspring. Reproductive patterns differ among fish, amphibians, reptiles, birds and mammals.", "Gametes; fertilisation; vertebrate differences"], "Reproductive Systems in Plants": ["Flowering plants reproduce sexually using structures in flowers. Stamens produce pollen and carpels contain ovules; after fertilisation, the ovule develops into a seed.", "Flower structures; gametes; fertilisation"], "Pollination in Plants": ["Pollination is the transfer of pollen from anther to stigma. It may occur within the same flower or plant or between different plants of the same species.", "Self-pollination; cross-pollination; agents"], "Regulation of Internal Environment": ["Homeostasis is the maintenance of a relatively stable internal environment. The nervous and endocrine systems coordinate responses involving temperature, water, glucose and other variables.", "Homeostasis; feedback; coordination"], "Nervous Co-ordination": ["The nervous system detects stimuli, processes information and produces rapid responses. Neurones transmit electrical signals between receptors, the central nervous system and effectors.", "Neurones; CNS; reflex action"], "Sense Organs": ["Sense organs contain receptors that detect specific stimuli. The eye detects light, the ear detects sound and contributes to balance, and receptors in skin detect touch, pressure, temperature and pain.", "Receptors; eye; ear"], "Ecology of Population": ["A population is a group of organisms of the same species living in an area. Population size is influenced by births, deaths, immigration and emigration, as well as environmental factors.", "Population density; growth; limiting factors"], "Balance in Nature": ["Natural ecosystems involve interacting populations and environmental factors. Predation, competition, disease and resource availability can regulate populations, although disturbances may change ecosystem stability.", "Competition; predation; stability"], "Reproductive Systems and Reproduction in Humans": ["Human reproduction involves male and female reproductive systems, production of gametes, fertilisation and development of an embryo. Hormones coordinate many reproductive processes.", "Male system; female system; fertilisation"], "Development of New Seeds": ["After fertilisation in flowering plants, the zygote develops into an embryo and the ovule develops into a seed. The seed contains structures that support the young plant during early growth.", "Fertilisation; embryo; seed structure"], "Fruits": ["A fruit usually develops from the ovary of a flower after fertilisation. Fruits protect seeds and often help disperse them by animals, wind, water or other means.", "Fruit formation; seed protection; dispersal"], "Reproductive Behaviours": ["Reproductive behaviour includes actions that help organisms find mates, attract partners, compete for mates and care for offspring. Behaviour is influenced by inherited and environmental factors.", "Courtship; mating; parental care"], "Biology of Heredity (Genetics)": ["Genetics is the study of heredity and variation. Genes are units of heredity located on chromosomes, and different versions of a gene are called alleles.", "Genes; chromosomes; alleles"], "Variation and Evolution": ["Variation means differences among individuals of a population. Genetic variation can arise through mutation and recombination, and natural selection can change the frequency of inherited characteristics over generations.", "Variation; natural selection; inheritance"], "Adaptation for Survival": ["An adaptation is an inherited characteristic that increases an organism's ability to survive and reproduce in a particular environment. Adaptations may be structural, physiological or behavioural.", "Structural; physiological; behavioural"], "Evolution": ["Evolution is change in inherited characteristics of populations over generations. Natural selection, mutation, genetic drift and gene flow are important processes involved in evolutionary change.", "Population change; natural selection; evidence"]}, quizzes={"Recognising Living Things": [{"q": "What is the main focus of recognising living things?", "a": "Living things are organisms that carry out life processes"}, {"q": "Which set contains key ideas for this topic?", "a": "Life processes; response to stimuli; reproduction"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Classification of Living Things": [{"q": "What is the main focus of classification of living things?", "a": "Classification is the grouping of organisms according to similarities and differences"}, {"q": "Which set contains key ideas for this topic?", "a": "Kingdoms and groups; similarities; identification"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "The Cell": [{"q": "What is the main focus of the cell?", "a": "The cell is the basic structural and functional unit of living organisms"}, {"q": "Which set contains key ideas for this topic?", "a": "Cell theory; organelles; plant vs animal cells"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "The Cell and Its Environment": [{"q": "What is the main focus of the cell and its environment?", "a": "Cells exchange substances with their surroundings"}, {"q": "Which set contains key ideas for this topic?", "a": "Diffusion; osmosis; concentration gradient"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Some Properties and Functions of the Cell": [{"q": "What is the main focus of some properties and functions of the cell?", "a": "Cell structures work together to keep the cell alive"}, {"q": "Which set contains key ideas for this topic?", "a": "Cell organelles; functions; cell organisation"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Plant Nutrition": [{"q": "What is the main focus of plant nutrition?", "a": "Green plants are mainly autotrophic because they manufacture food by photosynthesis"}, {"q": "Which set contains key ideas for this topic?", "a": "Photosynthesis; chlorophyll; mineral nutrients"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Nutrition in Animals": [{"q": "What is the main focus of nutrition in animals?", "a": "Animals are heterotrophic and obtain nutrients by feeding on other organisms or their products"}, {"q": "Which set contains key ideas for this topic?", "a": "Nutrients; balanced diet; digestion"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Tissues and Supporting Systems": [{"q": "What is the main focus of tissues and supporting systems?", "a": "A tissue is a group of similar cells performing a particular function"}, {"q": "Which set contains key ideas for this topic?", "a": "Specialisation; tissues; support"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Basic Ecological Concepts": [{"q": "What is the main focus of basic ecological concepts?", "a": "Ecology is the study of relationships between organisms and their environment"}, {"q": "Which set contains key ideas for this topic?", "a": "Habitat; population; ecosystem"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Functioning Ecosystem": [{"q": "What is the main focus of functioning ecosystem?", "a": "An ecosystem consists of living organisms interacting with one another and with non-living factors"}, {"q": "Which set contains key ideas for this topic?", "a": "Producers; consumers; decomposers"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Energy Transformation in Nature": [{"q": "What is the main focus of energy transformation in nature?", "a": "Energy is transformed from one form to another"}, {"q": "Which set contains key ideas for this topic?", "a": "Photosynthesis; food chains; energy loss"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Relevance of Biology to Agriculture": [{"q": "What is the main focus of relevance of biology to agriculture?", "a": "Biology helps agriculture through knowledge of crops, animals, pests, diseases, soil organisms, breeding and environmental management"}, {"q": "Which set contains key ideas for this topic?", "a": "Crop production; animal production; pest management"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Micro-organisms Around Us": [{"q": "What is the main focus of micro-organisms around us?", "a": "Microorganisms are very small organisms or biological agents, including bacteria, fungi, protozoa, microscopic algae and viruses"}, {"q": "Which set contains key ideas for this topic?", "a": "Types; habitats; useful and harmful effects"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Micro-organisms in Action": [{"q": "What is the main focus of micro-organisms in action?", "a": "Microorganisms carry out processes such as decomposition and fermentation"}, {"q": "Which set contains key ideas for this topic?", "a": "Decomposition; fermentation; biotechnology"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Micro-organisms and Better Health": [{"q": "What is the main focus of micro-organisms and better health?", "a": "Some microorganisms cause infectious diseases, while others are useful to humans"}, {"q": "Which set contains key ideas for this topic?", "a": "Pathogens; prevention; beneficial microbes"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Aquatic Habitats": [{"q": "What is the main focus of aquatic habitats?", "a": "Aquatic habitats include freshwater and marine environments"}, {"q": "Which set contains key ideas for this topic?", "a": "Freshwater; marine; aquatic adaptations"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Terrestrial Habitats": [{"q": "What is the main focus of terrestrial habitats?", "a": "Terrestrial habitats occur on land and include forests, grasslands, deserts and other environments"}, {"q": "Which set contains key ideas for this topic?", "a": "Forest; grassland; desert"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Reproduction in Unicellular Organisms and Invertebrates": [{"q": "What is the main focus of reproduction in unicellular organisms and invertebrates?", "a": "Many unicellular organisms reproduce asexually by processes such as binary fission or budding"}, {"q": "Which set contains key ideas for this topic?", "a": "Asexual reproduction; sexual reproduction; examples"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Classification of Plants": [{"q": "What is the main focus of classification of plants?", "a": "Plants can be classified using characteristics such as vascular tissues, seeds and reproductive structures"}, {"q": "Which set contains key ideas for this topic?", "a": "Vascular tissue; seeds; plant groups"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Digestive Systems": [{"q": "What is the main focus of digestive systems?", "a": "Digestion breaks large, insoluble food molecules into smaller soluble molecules that can be absorbed and used"}, {"q": "Which set contains key ideas for this topic?", "a": "Digestion; enzymes; absorption"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Transport Systems": [{"q": "What is the main focus of transport systems?", "a": "Transport systems distribute materials around organisms"}, {"q": "Which set contains key ideas for this topic?", "a": "Xylem; phloem; blood"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Respiratory Systems": [{"q": "What is the main focus of respiratory systems?", "a": "Respiration is the controlled release of energy from food"}, {"q": "Which set contains key ideas for this topic?", "a": "Aerobic respiration; gas exchange; respiratory surfaces"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Excretory Systems": [{"q": "What is the main focus of excretory systems?", "a": "Excretion removes metabolic waste from the body"}, {"q": "Which set contains key ideas for this topic?", "a": "Excretion; kidneys; homeostasis"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Nutrient Cycling in Nature": [{"q": "What is the main focus of nutrient cycling in nature?", "a": "Nutrients move continuously between organisms and the environment"}, {"q": "Which set contains key ideas for this topic?", "a": "Carbon cycle; nitrogen cycle; decomposers"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Ecological Management": [{"q": "What is the main focus of ecological management?", "a": "Ecological management involves using knowledge of ecosystems to protect resources, reduce environmental damage and maintain healthy populations and habitats"}, {"q": "Which set contains key ideas for this topic?", "a": "Sustainable use; pollution control; habitat management"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Conservation of Natural Resources": [{"q": "What is the main focus of conservation of natural resources?", "a": "Conservation is the careful protection and management of natural resources such as soil, forests, water and wildlife"}, {"q": "Which set contains key ideas for this topic?", "a": "Renewable resources; sustainable use; biodiversity"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Pests and Diseases of Crops": [{"q": "What is the main focus of pests and diseases of crops?", "a": "Crop pests damage plants directly or reduce yield, while crop diseases are caused by pathogens or other harmful agents"}, {"q": "Which set contains key ideas for this topic?", "a": "Pests; pathogens; integrated control"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Reproductive Systems in Vertebrates": [{"q": "What is the main focus of reproductive systems in vertebrates?", "a": "Vertebrates have reproductive organs specialised for producing gametes, enabling fertilisation and development of offspring"}, {"q": "Which set contains key ideas for this topic?", "a": "Gametes; fertilisation; vertebrate differences"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Reproductive Systems in Plants": [{"q": "What is the main focus of reproductive systems in plants?", "a": "Flowering plants reproduce sexually using structures in flowers"}, {"q": "Which set contains key ideas for this topic?", "a": "Flower structures; gametes; fertilisation"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Pollination in Plants": [{"q": "What is the main focus of pollination in plants?", "a": "Pollination is the transfer of pollen from anther to stigma"}, {"q": "Which set contains key ideas for this topic?", "a": "Self-pollination; cross-pollination; agents"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Regulation of Internal Environment": [{"q": "What is the main focus of regulation of internal environment?", "a": "Homeostasis is the maintenance of a relatively stable internal environment"}, {"q": "Which set contains key ideas for this topic?", "a": "Homeostasis; feedback; coordination"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Nervous Co-ordination": [{"q": "What is the main focus of nervous co-ordination?", "a": "The nervous system detects stimuli, processes information and produces rapid responses"}, {"q": "Which set contains key ideas for this topic?", "a": "Neurones; CNS; reflex action"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Sense Organs": [{"q": "What is the main focus of sense organs?", "a": "Sense organs contain receptors that detect specific stimuli"}, {"q": "Which set contains key ideas for this topic?", "a": "Receptors; eye; ear"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Ecology of Population": [{"q": "What is the main focus of ecology of population?", "a": "A population is a group of organisms of the same species living in an area"}, {"q": "Which set contains key ideas for this topic?", "a": "Population density; growth; limiting factors"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Balance in Nature": [{"q": "What is the main focus of balance in nature?", "a": "Natural ecosystems involve interacting populations and environmental factors"}, {"q": "Which set contains key ideas for this topic?", "a": "Competition; predation; stability"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Reproductive Systems and Reproduction in Humans": [{"q": "What is the main focus of reproductive systems and reproduction in humans?", "a": "Human reproduction involves male and female reproductive systems, production of gametes, fertilisation and development of an embryo"}, {"q": "Which set contains key ideas for this topic?", "a": "Male system; female system; fertilisation"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Development of New Seeds": [{"q": "What is the main focus of development of new seeds?", "a": "After fertilisation in flowering plants, the zygote develops into an embryo and the ovule develops into a seed"}, {"q": "Which set contains key ideas for this topic?", "a": "Fertilisation; embryo; seed structure"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Fruits": [{"q": "What is the main focus of fruits?", "a": "A fruit usually develops from the ovary of a flower after fertilisation"}, {"q": "Which set contains key ideas for this topic?", "a": "Fruit formation; seed protection; dispersal"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Reproductive Behaviours": [{"q": "What is the main focus of reproductive behaviours?", "a": "Reproductive behaviour includes actions that help organisms find mates, attract partners, compete for mates and care for offspring"}, {"q": "Which set contains key ideas for this topic?", "a": "Courtship; mating; parental care"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Biology of Heredity (Genetics)": [{"q": "What is the main focus of biology of heredity (genetics)?", "a": "Genetics is the study of heredity and variation"}, {"q": "Which set contains key ideas for this topic?", "a": "Genes; chromosomes; alleles"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Variation and Evolution": [{"q": "What is the main focus of variation and evolution?", "a": "Variation means differences among individuals of a population"}, {"q": "Which set contains key ideas for this topic?", "a": "Variation; natural selection; inheritance"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Adaptation for Survival": [{"q": "What is the main focus of adaptation for survival?", "a": "An adaptation is an inherited characteristic that increases an organism's ability to survive and reproduce in a particular environment"}, {"q": "Which set contains key ideas for this topic?", "a": "Structural; physiological; behavioural"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}], "Evolution": [{"q": "What is the main focus of evolution?", "a": "Evolution is change in inherited characteristics of populations over generations"}, {"q": "Which set contains key ideas for this topic?", "a": "Population change; natural selection; evidence"}, {"q": "What should you do if you want to understand this topic better?", "a": "Study the lesson, learn the key points, and practise questions."}]};
+let chosen="ALL",current=null;
+function render(){const q=document.getElementById("search").value.toLowerCase(),list=document.getElementById("list");list.innerHTML="";
+topics.filter(x=>(chosen==="ALL"||x.class===chosen)&&x.topic.toLowerCase().includes(q)).forEach(x=>{let d=document.createElement("div");d.className="card";d.innerHTML='<span class="badge">'+x.class+'</span><h3>'+x.topic+'</h3><div class="muted">📖 Learn • 🧠 Quiz • 🤖 Ask AI</div>';d.onclick=()=>openTopic(x);list.appendChild(d)})}
+function setClass(c,b){chosen=c;document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");render()}
+function openTopic(x){current=x;document.getElementById("list").style.display="none";document.querySelector(".tabs").style.display="none";document.getElementById("search").style.display="none";
+let d=lessons[x.topic], keys=d[1].split("; "),p=document.getElementById("panel");p.className="panel show";
+p.innerHTML='<button class="back" onclick="closeTopic()">← Back to topics</button><span class="badge">'+x.class+'</span><h2>'+x.topic+'</h2>'+
+'<div class="section"><h3>📖 Simple Lesson</h3><p>'+d[0]+'</p></div>'+
+'<div class="section"><h3>🔑 Key Points</h3>'+keys.map(k=>'<span class="key">'+k+'</span>').join("")+'</div>'+
+'<button class="primary" onclick="startQuiz()">🧠 Start 3-Question Quiz</button><div id="quiz"></div>'+
+'<div class="ask"><h3>🤖 Ask Biology AI</h3><input id="question" placeholder="Ask about this topic"><button onclick="askAI()">Ask</button><div id="answer"></div></div>'}
+function closeTopic(){document.getElementById("panel").className="panel";document.getElementById("list").style.display="grid";document.querySelector(".tabs").style.display="flex";document.getElementById("search").style.display="block"}
+function startQuiz(){let qs=quizzes[current.topic],box=document.getElementById("quiz");box.innerHTML="<h3>🧠 Quiz</h3>";qs.forEach((z,i)=>{box.innerHTML+='<div class="quizq"><b>'+(i+1)+'. '+z.q+'</b><button onclick="check(this,true)">A. '+z.a+'</button><button onclick="check(this,false)">B. None of these</button><button onclick="check(this,false)">C. Not related to Biology</button></div>'})}
+function check(btn,correct){btn.style.background=correct?"#dff5e6":"#ffe8e8";btn.innerText+=(correct?" ✓ Correct":" ✗ Try again")}
+function askAI(){let q=document.getElementById("question").value.trim();if(!q)return;let d=lessons[current.topic];document.getElementById("answer").innerHTML='<div class="answer"><b>BioTutor AI:</b> '+d[0]+'<br><br>For a deeper answer, ask about the definition, functions, examples, differences, importance, or exam questions for <b>'+current.topic+'</b>.</div>'}
+document.getElementById("search").addEventListener("input",render);render();
+</script>
+<script id="v3-js">
+(function(){
+  const KEY="biotutor_v3_progress";
+  const todayKey=()=>new Date().toISOString().slice(0,10);
+  function load(){
+    try{return JSON.parse(localStorage.getItem(KEY))||{completed:[],points:0,lastDay:"",streak:0};}
+    catch(e){return {completed:[],points:0,lastDay:"",streak:0};}
+  }
+  function save(x){localStorage.setItem(KEY,JSON.stringify(x));}
+  window.updateV3Progress=function(){
+    const p=load(), total=(window.topics||[]).length||43;
+    const c=document.getElementById("completedCount"), s=document.getElementById("quizScoreTotal"), st=document.getElementById("streakCount"), f=document.getElementById("progressFill");
+    if(c)c.textContent=p.completed.length;
+    if(s)s.textContent=p.points;
+    if(st)st.textContent=p.streak;
+    if(f)f.style.width=Math.min(100,(p.completed.length/total)*100)+"%";
+  };
+  window.markTopicComplete=function(topic){
+    const p=load();
+    if(!p.completed.includes(topic))p.completed.push(topic);
+    const d=todayKey();
+    if(p.lastDay!==d){
+      const prev=new Date(); prev.setDate(prev.getDate()-1);
+      const prevKey=prev.toISOString().slice(0,10);
+      p.streak=(p.lastDay===prevKey?p.streak:0)+1;
+      p.lastDay=d;
+    }
+    save(p); updateV3Progress();
+  };
+  window.addQuizPoints=function(n){
+    const p=load(); p.points+=Number(n)||0; save(p); updateV3Progress();
+  };
+  window.resetProgress=function(){
+    if(confirm("Reset all Biology progress and quiz points?")){
+      localStorage.removeItem(KEY); updateV3Progress();
+    }
+  };
+
+  window.openRandomFlashcard=function(){
+    const ts=window.topics||[];
+    if(!ts.length)return;
+    const t=ts[Math.floor(Math.random()*ts.length)];
+    const panel=document.getElementById("v3Panel");
+    const lesson=(window.lessons&&window.lessons[t])||"Study this topic and identify its key ideas.";
+    const key=(window.keyPoints&&window.keyPoints[t])||"Remember the definition, major points and examples.";
+    panel.innerHTML='<div class="card"><h2>🃏 Flashcard: '+esc(t)+'</h2><div id="flash" class="flashcard" onclick="flipFlash()">'+esc(lesson.split(".")[0])+'<br><small>Tap to flip</small></div><div class="action-row"><button class="action-btn" onclick="markTopicComplete('+JSON.stringify(t)+')">✅ Mark studied</button><button class="action-btn" onclick="openRandomFlashcard()">➡️ Next</button></div></div>';
+    panel.dataset.back=key;
+  };
+  window.flipFlash=function(){
+    const panel=document.getElementById("v3Panel"), f=document.getElementById("flash");
+    if(f){f.innerHTML=esc(panel.dataset.back||"Key points not available.")+'<br><small>Tap to flip back</small>'; f.onclick=function(){openRandomFlashcard();};}
+  };
+
+  window.openQuickQuiz=function(){
+    const ts=window.topics||[]; if(!ts.length)return;
+    const t=ts[Math.floor(Math.random()*ts.length)];
+    const qs=(window.quizzes&&window.quizzes[t])||[];
+    const q=qs[Math.floor(Math.random()*qs.length)];
+    const panel=document.getElementById("v3Panel");
+    if(!q){panel.innerHTML='<div class="card"><h2>📝 Quick Quiz</h2><p>Open a topic to practise its quiz.</p></div>';return;}
+    const question=q.q||q.question||"Question";
+    const options=q.options||q.choices||[];
+    const correct=(q.answer!==undefined?q.answer:q.correct);
+    let out='<div class="card"><h2>📝 Quick Quiz</h2><p><b>'+esc(t)+'</b></p><p>'+esc(question)+'</p><div id="quickAnswers">';
+    options.forEach((o,i)=>out+='<button class="answer-btn" onclick="answerQuick(this,'+JSON.stringify(i)+','+JSON.stringify(correct)+')">'+esc(o)+'</button>');
+    out+='</div><div id="quickResult"></div></div>';
+    panel.innerHTML=out;
+  };
+  window.answerQuick=function(btn,i,correct){
+    const ok=(String(i)===String(correct));
+    document.querySelectorAll("#quickAnswers .answer-btn").forEach(b=>b.disabled=true);
+    btn.classList.add(ok?"correct":"wrong");
+    const r=document.getElementById("quickResult");
+    r.innerHTML=ok?'<div class="quiz-score">✅ Correct! +10 points</div>':'<div class="quiz-score">❌ Not quite. Review the topic and try again.</div>';
+    if(ok)addQuizPoints(10);
+  };
+
+  window.askBioTutorV3=function(){
+    const input=document.getElementById("v3Question"), box=document.getElementById("v3Chat");
+    if(!input||!box)return;
+    const q=input.value.trim(); if(!q)return;
+    box.innerHTML+='<div class="ai-msg user"><b>You:</b> '+esc(q)+'</div>';
+    const a=tutorAnswer(q);
+    box.innerHTML+='<div class="ai-msg"><b>BioTutor:</b> '+a+'</div>';
+    input.value="";
+  };
+  function tutorAnswer(q){
+    const x=q.toLowerCase();
+    if(x.includes("cell"))return "A cell is the basic structural and functional unit of life. Animal and plant cells both have a cell membrane, cytoplasm and nucleus, while plant cells also have structures such as a cell wall and chloroplasts.";
+    if(x.includes("photosynthesis"))return "Photosynthesis is the process by which green plants use light energy to make food from carbon dioxide and water, releasing oxygen.";
+    if(x.includes("respiration"))return "Respiration releases usable energy from food. In aerobic respiration, oxygen is used and carbon dioxide and water are produced.";
+    if(x.includes("ecosystem"))return "An ecosystem includes living organisms and the non-living factors in their environment, interacting with one another.";
+    if(x.includes("mitosis"))return "Mitosis produces two genetically similar daughter cells and is important for growth, repair and replacement of cells.";
+    if(x.includes("meiosis"))return "Meiosis is a type of cell division that produces cells with half the usual chromosome number and helps create genetic variation.";
+    if(x.includes("gene")||x.includes("genetics"))return "A gene is a unit of heredity carried in DNA. Genetics studies how characteristics are inherited and how variation occurs.";
+    if(x.includes("support"))return "Support systems help organisms maintain shape and resist forces. In plants, tissues such as xylem and supporting tissues contribute to support.";
+    return "Good Biology question! Try asking about a specific topic, for example: “What is photosynthesis?”, “Explain the cell”, or “What is mitosis?”";
+  }
+  function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+
+  // Add a tutor panel if the existing app does not have a useful AI interface.
+  function addTutor(){
+    if(document.getElementById("v3-tutor"))return;
+    const el=document.createElement("div"); el.id="v3-tutor"; el.className="card";
+    el.innerHTML='<h2>🤖 Ask BioTutor</h2><div id="v3Chat" class="ai-box"><div class="ai-msg">Ask me a Biology question in simple words.</div></div><div class="action-row"><input id="v3Question" placeholder="e.g. What is photosynthesis?" style="flex:1;padding:11px;border:1px solid #ddd;border-radius:10px"><button class="action-btn" onclick="askBioTutorV3()">Ask</button></div>';
+    const tools=document.getElementById("v3-tools"); tools.parentNode.insertBefore(el,tools.nextSibling);
+  }
+  document.addEventListener("DOMContentLoaded",function(){addTutor();updateV3Progress();});
+})();
+</script>
+
+<script id="v4-js">
+(function(){
+  const PKEY="biotutor_v3_progress";
+  const getP=()=>{try{return JSON.parse(localStorage.getItem(PKEY))||{completed:[],points:0,streak:0};}catch(e){return {completed:[],points:0,streak:0};}};
+  const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+  function allTopics(){return window.topics||[];}
+  function sync(){
+    const p=getP(), t=allTopics().length||43;
+    const a=document.getElementById("v4Topics"), b=document.getElementById("v4Points");
+    if(a)a.textContent=p.completed.length+"/"+t;
+    if(b)b.textContent=p.points||0;
+  }
+  window.v4Show=function(mode){
+    const area=document.getElementById("v4Area"); if(!area)return;
+    if(mode==="checklist"){
+      const p=getP();
+      let h="<h3>📚 Topic Checklist</h3><div class='v4-topic-list'>";
+      allTopics().forEach((t,i)=>{
+        const done=p.completed.includes(t);
+        h+="<label class='v4-topic'><input type='checkbox' "+(done?"checked":"")+" onchange='v4Toggle("+JSON.stringify(t)+",this.checked)'><span>"+(i+1)+". "+esc(t)+"</span></label>";
+      });
+      area.innerHTML=h+"</div>";
+    } else if(mode==="exam"){
+      v4StartExam();
+    } else {
+      area.innerHTML="<h3>🤖 Biology Tutor</h3><p>Ask a Biology question and I’ll explain it in simple student-friendly language.</p><div class='action-row'><input id='v4Q' placeholder='e.g. What is osmosis?' style='flex:1;padding:11px;border:1px solid #ddd;border-radius:10px'><button class='action-btn' onclick='v4Ask()'>Ask</button></div><div id='v4A' class='ai-box'></div>";
+    }
+  };
+  window.v4Toggle=function(topic,on){
+    let p=getP();
+    p.completed=p.completed||[];
+    if(on&&!p.completed.includes(topic))p.completed.push(topic);
+    if(!on)p.completed=p.completed.filter(x=>x!==topic);
+    localStorage.setItem(PKEY,JSON.stringify(p));sync();
+  };
+  let exam={questions:[],index:0,score:0};
+  function getQuestions(){
+    const out=[];
+    for(const t of allTopics()){
+      const qs=(window.quizzes&&window.quizzes[t])||[];
+      for(const q of qs) out.push({topic:t,q:q.q||q.question||"",options:q.options||q.choices||[],answer:q.answer!==undefined?q.answer:q.correct});
+    }
+    return out;
+  }
+  window.v4StartExam=function(){
+    let qs=getQuestions().sort(()=>Math.random()-0.5).slice(0,10);
+    if(!qs.length){document.getElementById("v4Area").innerHTML="<p>No quiz questions are loaded yet.</p>";return;}
+    exam={questions:qs,index:0,score:0};v4RenderExam();
+  };
+  function v4RenderExam(){
+    const area=document.getElementById("v4Area"), x=exam.questions[exam.index];
+    let h="<h3>🎯 Exam Mode</h3><p><b>Question "+(exam.index+1)+" of "+exam.questions.length+"</b> · "+esc(x.topic)+"</p><p>"+esc(x.q)+"</p><div>";
+    x.options.forEach((o,i)=>h+="<button class='exam-choice' onclick='v4Answer(this,"+i+")'>"+esc(o)+"</button>");
+    h+="</div><div id='v4ExamResult'></div>";
+    area.innerHTML=h;
+  }
+  window.v4Answer=function(btn,i){
+    const x=exam.questions[exam.index], ok=String(i)===String(x.answer);
+    document.querySelectorAll(".exam-choice").forEach(b=>b.disabled=true);
+    btn.classList.add(ok?"v4-correct":"v4-wrong");
+    if(ok)exam.score++;
+    document.getElementById("v4ExamResult").innerHTML="<p>"+(ok?"✅ Correct!":"❌ Review that topic.")+"</p><button class='action-btn' onclick='v4Next()'>"+(exam.index===exam.questions.length-1?"See Result":"Next Question →")+"</button>";
+  };
+  window.v4Next=function(){
+    exam.index++;
+    if(exam.index>=exam.questions.length){
+      const pts=exam.score*10, p=getP();p.points=(p.points||0)+pts;localStorage.setItem(PKEY,JSON.stringify(p));sync();
+      document.getElementById("v4Area").innerHTML="<div class='v4-card'><h3>🏆 Exam Complete!</h3><div class='v4-big'>"+exam.score+"/"+exam.questions.length+"</div><p>You earned <b>"+pts+" points</b>.</p><button class='action-btn' onclick='v4StartExam()'>Try Another Exam</button></div>";
+    }else v4RenderExam();
+  };
+  window.v4Ask=function(){
+    const q=(document.getElementById("v4Q")||{}).value?.trim(); if(!q)return;
+    const x=q.toLowerCase(), a=
+      x.includes("osmosis")?"Osmosis is the movement of water molecules through a selectively permeable membrane from a region of higher water potential to lower water potential. In simple words: water moves across the membrane toward the more concentrated solution.":
+      x.includes("diffusion")?"Diffusion is the net movement of particles from a region of higher concentration to a region of lower concentration until they become more evenly distributed.":
+      x.includes("photosynthesis")?"Photosynthesis is how green plants use light energy to make food from carbon dioxide and water. Oxygen is released as a product.":
+      x.includes("respiration")?"Respiration is the process that releases energy from food. Aerobic respiration uses oxygen.":
+      x.includes("ecosystem")?"An ecosystem is made up of living organisms and the non-living parts of their environment interacting together.":
+      x.includes("gene")||x.includes("genetics")?"A gene is a unit of heredity in DNA. Genetics is the study of inheritance and variation.":
+      "I can help with Biology. Try asking about a specific topic such as cells, nutrition, transport, respiration, ecology, genetics, reproduction, or evolution.";
+    document.getElementById("v4A").innerHTML="<div class='ai-msg'><b>BioTutor:</b> "+a+"</div>";
+  };
+  document.addEventListener("DOMContentLoaded",function(){sync();v4Show("checklist");});
+})();
+</script>
+
+<script id="v5-js">
+(function(){
+ const bank=[["Cell", "Which structure controls most activities of a cell?", ["Nucleus", "Cell wall", "Vacuole", "Ribosome"], 0, "The nucleus contains genetic material and helps control cell activities."], ["Cell", "Which structure is present in plant cells but not animal cells?", ["Cell wall", "Cell membrane", "Cytoplasm", "Nucleus"], 0, "Plant cells have a cellulose cell wall; animal cells do not."], ["Cell", "Which organelle is the main site of aerobic respiration?", ["Mitochondrion", "Chloroplast", "Vacuole", "Nucleus"], 0, "Mitochondria are major sites of aerobic respiration."], ["Cell", "Which movement of particles requires no cellular energy?", ["Diffusion", "Active transport", "Muscle contraction", "Cell division"], 0, "Diffusion is passive movement down a concentration gradient."], ["Cell and Its Environment", "Osmosis involves movement of:", ["Water molecules", "Proteins", "Starch grains", "Oxygen only"], 0, "Osmosis is the movement of water through a selectively permeable membrane."], ["Plant Nutrition", "Which gas is used by green plants during photosynthesis?", ["Carbon dioxide", "Nitrogen", "Hydrogen", "Helium"], 0, "Carbon dioxide is a raw material for photosynthesis."], ["Plant Nutrition", "Chlorophyll is important because it:", ["Absorbs light energy", "Digests proteins", "Stores urine", "Produces roots"], 0, "Chlorophyll absorbs light energy used in photosynthesis."], ["Nutrition in Animals", "Which nutrient is mainly needed for growth and tissue repair?", ["Protein", "Water", "Vitamin C", "Fibre"], 0, "Proteins provide amino acids needed for growth and repair."], ["Nutrition in Animals", "Where does most absorption of digested nutrients occur?", ["Small intestine", "Stomach", "Oesophagus", "Large intestine"], 0, "The small intestine is adapted for absorption."], ["Tissues and Supporting Systems", "Xylem mainly transports:", ["Water and mineral salts", "Glucose only", "Hormones only", "Oxygen"], 0, "Xylem carries water and mineral salts from roots through the plant."], ["Basic Ecological Concepts", "An organism's place and role in an ecosystem is its:", ["Niche", "Species name", "Cell", "Tissue"], 0, "A niche describes the role and position of an organism in its ecosystem."], ["Functioning Ecosystem", "Organisms that make their own food are called:", ["Producers", "Consumers", "Decomposers", "Parasites"], 0, "Green plants are common producers."], ["Energy Transformation in Nature", "The main original energy source for most ecosystems is:", ["Sunlight", "Soil", "Wind", "Moonlight"], 0, "Sunlight supplies energy captured by photosynthetic producers."], ["Micro-organisms Around Us", "Which is a microorganism?", ["Bacterium", "Goat", "Mango tree", "Eagle"], 0, "Bacteria are microscopic organisms."], ["Micro-organisms in Action", "Yeast is commonly used in:", ["Bread making", "Making glass", "Producing steel", "Filtering sand"], 0, "Yeast fermentation helps dough rise."], ["Micro-organisms and Better Health", "Vaccination helps the body to:", ["Develop protection against specific infections", "Digest all food", "Increase height instantly", "Replace bones"], 0, "Vaccines train the immune system to recognize particular pathogens."], ["Aquatic Habitats", "Which factor can strongly affect aquatic organisms?", ["Dissolved oxygen", "Shoe size", "Hair colour", "Notebook size"], 0, "Dissolved oxygen is important for many aquatic organisms."], ["Terrestrial Habitats", "A habitat is best described as:", ["The place where an organism lives", "A type of cell", "A food molecule", "A chromosome"], 0, "A habitat is the natural place where an organism lives."], ["Reproduction in Unicellular Organisms and Invertebrates", "A common asexual reproduction method in yeast is:", ["Budding", "Pollination", "Fertilization", "Seed formation"], 0, "Yeast can reproduce asexually by budding."], ["Classification of Plants", "Plants with flowers and seeds enclosed in fruits are:", ["Angiosperms", "Mosses", "Ferns", "Algae"], 0, "Angiosperms are flowering plants whose seeds are enclosed in fruits."], ["Digestive Systems", "Which enzyme begins starch digestion in the mouth?", ["Amylase", "Pepsin", "Lipase", "Trypsin"], 0, "Salivary amylase begins starch digestion in the mouth."], ["Transport Systems", "Red blood cells mainly transport:", ["Oxygen", "Bile", "Urea", "Starch"], 0, "Haemoglobin in red blood cells binds oxygen."], ["Respiratory Systems", "Gas exchange in the human lungs mainly occurs in the:", ["Alveoli", "Trachea", "Larynx", "Nose"], 0, "Alveoli provide a large surface for gas exchange."], ["Excretory Systems", "Which organ removes urea from the blood?", ["Kidney", "Heart", "Lung", "Pancreas"], 0, "The kidneys filter blood and excrete urea in urine."], ["Nutrient Cycling in Nature", "Nitrogen-fixing bacteria help make nitrogen compounds available to:", ["Plants", "Rocks", "Sunlight", "Clouds"], 0, "Nitrogen fixation converts atmospheric nitrogen into usable nitrogen compounds."], ["Ecological Management", "A sustainable practice aims to:", ["Use resources without exhausting them", "Use all resources immediately", "Destroy habitats", "Stop all farming"], 0, "Sustainability balances resource use with long-term conservation."], ["Conservation of Natural Resources", "Which practice helps conserve forests?", ["Reforestation", "Uncontrolled logging", "Bush burning", "Overgrazing"], 0, "Reforestation replaces trees and can restore forest cover."], ["Pests and Diseases of Crops", "An organism that damages crops is called a:", ["Pest", "Producer", "Pollinator only", "Decomposer only"], 0, "Crop pests can reduce yield by feeding on or damaging plants."], ["Reproductive Systems in Vertebrates", "The male reproductive cell is called a:", ["Sperm cell", "Ovum", "Zygote", "Embryo"], 0, "Sperm cells are male gametes."], ["Reproductive Systems in Plants", "The male reproductive structure of a flower is the:", ["Stamen", "Carpel", "Sepal", "Petal"], 0, "The stamen produces pollen."], ["Pollination in Plants", "Pollination is the transfer of pollen from:", ["Anther to stigma", "Root to leaf", "Ovary to root", "Fruit to stem"], 0, "Pollination transfers pollen to the stigma."], ["Regulation of Internal Environment", "Homeostasis means maintaining:", ["A relatively stable internal environment", "A constant body size", "A fixed population", "Only body temperature"], 0, "Homeostasis keeps internal conditions within suitable limits."], ["Nervous Co-ordination", "The basic functional unit of the nervous system is the:", ["Neuron", "Nephron", "Alveolus", "Platelet"], 0, "Neurons transmit nerve impulses."], ["Sense Organs", "The retina is found in the:", ["Eye", "Ear", "Nose", "Skin"], 0, "The retina contains light-sensitive receptor cells."], ["Ecology of Population", "A population is a group of organisms of the same species living in:", ["The same area at a given time", "Different planets", "One cell", "Only water"], 0, "Population refers to members of one species in an area at a given time."], ["Balance in Nature", "Predator-prey relationships can help regulate:", ["Population sizes", "Cell walls", "Blood groups", "Seed colour"], 0, "Predation is one factor that can influence population size."], ["Reproductive Systems and Reproduction in Humans", "Fertilization is the fusion of:", ["Male and female gametes", "Two tissues", "Two bones", "Two hormones"], 0, "Fertilization produces a zygote through fusion of gametes."], ["Development of New Seeds", "After fertilization in a flowering plant, the ovule develops into a:", ["Seed", "Leaf", "Root hair", "Sepal"], 0, "The fertilized ovule develops into a seed."], ["Fruits", "In flowering plants, a fruit generally develops from the:", ["Ovary", "Root", "Anther", "Leaf"], 0, "After fertilization, the ovary commonly develops into the fruit."], ["Reproductive Behaviours", "Courtship behaviour can help organisms to:", ["Attract mates and coordinate reproduction", "Digest food", "Make chlorophyll", "Filter blood"], 0, "Courtship can help individuals attract and select mates."], ["Biology of Heredity (Genetics)", "A gene is best described as:", ["A unit of heredity in DNA", "A type of tissue", "A digestive enzyme", "A blood vessel"], 0, "Genes are sections of DNA associated with inherited characteristics."], ["Variation and Evolution", "Variation means:", ["Differences among individuals of a population", "All individuals being identical", "Only differences between cells", "The loss of all genes"], 0, "Variation refers to differences between individuals."], ["Adaptation for Survival", "An adaptation is a feature that helps an organism:", ["Survive and reproduce in its environment", "Stop all movement", "Avoid all competition", "Become a different species instantly"], 0, "Adaptations can improve survival and reproductive success in a particular environment."], ["Evolution", "Evolution refers to:", ["Change in inherited characteristics of populations over generations", "Growth of one individual only", "Daily changes in body temperature", "Movement of water"], 0, "Evolution involves inherited changes in populations across generations."]];
+ let state={qs:[],i:0,score:0,answers:[],seconds:0,timer:null};
+ const esc=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+ function render(){
+   const a=document.getElementById("v5ExamArea"); if(!a)return;
+   if(state.i>=state.qs.length){finish();return;}
+   const x=state.qs[state.i];
+   a.innerHTML='<div class="v5-box"><div><b>Question '+(state.i+1)+' / '+state.qs.length+'</b></div><p><span class="badge">'+esc(x[0])+'</span></p><h3>'+esc(x[1])+'</h3><div id="v5Opts">'+x[2].map((o,i)=>'<button class="v5-option" onclick="v5Answer(this,'+i+')">'+esc(o)+'</button>').join('')+'</div><div id="v5Feedback"></div></div>';
+ }
+ window.v5Start=function(){
+   clearInterval(state.timer);
+   let n=Number(document.getElementById("v5Count").value)||10;
+   state.qs=[...bank].sort(()=>Math.random()-.5).slice(0,Math.min(n,bank.length));
+   state.i=0;state.score=0;state.answers=[];state.seconds=state.qs.length*45;
+   const timer=document.getElementById("v5Timer");
+   function tick(){let m=Math.floor(state.seconds/60),s=state.seconds%60;if(timer)timer.textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");if(state.seconds<=0){clearInterval(state.timer);finish();}state.seconds--;}
+   tick();state.timer=setInterval(tick,1000);render();
+ };
+ window.v5Answer=function(btn,i){
+   const x=state.qs[state.i],ok=i===x[3];
+   document.querySelectorAll("#v5Opts .v5-option").forEach(b=>b.disabled=true);
+   btn.classList.add(ok?"correct":"wrong");
+   if(ok)state.score++;
+   state.answers.push({q:x[1],chosen:x[2][i],correct:x[2][x[3]],ok:ok,why:x[4]});
+   document.getElementById("v5Feedback").innerHTML='<p>'+ (ok?"✅ Correct!":"❌ Incorrect.") +' '+esc(x[4])+'</p><button class="v5-btn v5-primary" onclick="v5Next()">Next →</button>';
+ };
+ window.v5Next=function(){state.i++;render();};
+ function finish(){
+   clearInterval(state.timer);
+   const a=document.getElementById("v5ExamArea"),pct=Math.round(state.score/state.qs.length*100);
+   let p={};try{p=JSON.parse(localStorage.getItem("biotutor_v3_progress"))||{};}catch(e){}
+   p.points=(p.points||0)+state.score*10;localStorage.setItem("biotutor_v3_progress",JSON.stringify(p));
+   let h='<div class="v5-box"><h3>🏆 Exam Finished</h3><div class="v5-score">'+state.score+'/'+state.qs.length+'</div><p><b>'+pct+'%</b> · '+(pct>=70?"Keep building on this result!":"Review the corrections and practise again.")+'</p><button class="v5-btn v5-primary" onclick="v5Start()">🔄 Try Again</button><h3>📖 Corrections</h3>';
+   state.answers.forEach((r,i)=>h+='<div class="v5-review"><b>'+ (i+1)+'. '+esc(r.q)+'</b><br>Chosen: '+esc(r.chosen)+'<br>Correct: '+esc(r.correct)+'<br><small>'+esc(r.why)+'</small></div>');
+   a.innerHTML=h+'</div>';
+   if(window.updateV3Progress)window.updateV3Progress();
+ }
+ document.addEventListener("DOMContentLoaded",function(){
+   const a=document.getElementById("v5ExamArea");
+   if(a)a.innerHTML='<div class="v5-box"><p>Choose 10–50 questions and press <b>Start Exam</b>. Each question has a short explanation after you answer.</p></div>';
+ });
+})();
+</script>
+
+<script id="v6-js">
+(function(){
+ const KEY="biotutor_v6";
+ let cls="SSS1", listMode="topics", current=null;
+ const classes={
+  SSS1:["Recognising Living Things","Classification of Living Things","The Cell","The Cell and Its Environment","Some Properties and Functions of the Cell","Plant Nutrition","Nutrition in Animals","Tissues and Supporting Systems","Basic Ecological Concepts","Functioning Ecosystem","Energy Transformation in Nature","Relevance of Biology to Agriculture","Micro-organisms Around Us","Micro-organisms in Action","Micro-organisms and Better Health","Aquatic Habitats","Terrestrial Habitats","Reproduction in Unicellular Organisms and Invertebrates"],
+  SSS2:["Classification of Plants","Digestive Systems","Transport Systems","Respiratory Systems","Excretory Systems","Nutrient Cycling in Nature","Ecological Management","Conservation of Natural Resources","Pests and Diseases of Crops","Reproductive Systems in Vertebrates","Reproductive Systems in Plants","Pollination in Plants"],
+  SSS3:["Regulation of Internal Environment","Nervous Co-ordination","Sense Organs","Ecology of Population","Balance in Nature","Reproductive Systems and Reproduction in Humans","Development of New Seeds","Fruits","Reproductive Behaviours","Biology of Heredity (Genetics)","Variation and Evolution","Adaptation for Survival","Evolution"]
+ };
+ const fallback={
+  "Recognising Living Things":"Living things show characteristics such as nutrition, respiration, movement, growth, reproduction, sensitivity and excretion.",
+  "Classification of Living Things":"Classification groups organisms according to shared characteristics. It makes identification and study easier.",
+  "The Cell":"The cell is the basic structural and functional unit of life. Cells contain structures that carry out specialized functions.",
+  "The Cell and Its Environment":"Cells exchange substances with their surroundings through processes such as diffusion, osmosis and active transport.",
+  "Some Properties and Functions of the Cell":"Cell structures work together. The nucleus controls activities, mitochondria release energy, and membranes regulate movement of substances.",
+  "Plant Nutrition":"Green plants make organic food by photosynthesis using light energy, carbon dioxide and water.",
+  "Nutrition in Animals":"Animals obtain nutrients by feeding. Major nutrient groups include carbohydrates, proteins, fats, vitamins, minerals, water and fibre.",
+  "Tissues and Supporting Systems":"A tissue is a group of similar cells performing a particular function. Supporting tissues help organisms maintain shape and strength.",
+  "Basic Ecological Concepts":"Ecology studies relationships between organisms and their environment. Important terms include habitat, population, community and ecosystem.",
+  "Functioning Ecosystem":"An ecosystem contains producers, consumers and decomposers interacting with non-living environmental factors.",
+  "Energy Transformation in Nature":"Energy enters most ecosystems as sunlight, is captured by producers and transferred through feeding relationships.",
+  "Relevance of Biology to Agriculture":"Biology helps agriculture through knowledge of crops, pests, diseases, soil organisms, breeding and animal health.",
+  "Micro-organisms Around Us":"Microorganisms include bacteria, fungi, protozoa and microscopic algae. Some are useful while others cause disease.",
+  "Micro-organisms in Action":"Microorganisms are used in processes such as fermentation, decomposition, food production and waste treatment.",
+  "Micro-organisms and Better Health":"Microbiology helps us understand infectious diseases, hygiene, immunity, vaccination and safe food handling.",
+  "Aquatic Habitats":"Aquatic habitats include freshwater and marine environments. Organisms are adapted to factors such as salinity, temperature, light and dissolved oxygen.",
+  "Terrestrial Habitats":"Terrestrial habitats occur on land and include forests, grasslands, deserts and other environments with different physical conditions.",
+  "Reproduction in Unicellular Organisms and Invertebrates":"Some organisms reproduce asexually, while others reproduce sexually. Asexual reproduction can produce offspring from one parent.",
+  "Classification of Plants":"Plants can be grouped by characteristics such as vascular tissues, seeds and flowers. Major groups include non-flowering and flowering plants.",
+  "Digestive Systems":"Digestion breaks large food molecules into smaller soluble substances that can be absorbed and used by cells.",
+  "Transport Systems":"Transport systems move substances around organisms. In humans, blood vessels and the heart form the circulatory system; plants use xylem and phloem.",
+  "Respiratory Systems":"Respiratory systems obtain oxygen and remove carbon dioxide. In humans, gas exchange occurs mainly at the alveoli.",
+  "Excretory Systems":"Excretion removes metabolic waste. The kidneys remove urea and regulate water and salts in the body.",
+  "Nutrient Cycling in Nature":"Elements such as carbon and nitrogen move between organisms and the environment through natural cycles.",
+  "Ecological Management":"Ecological management aims to use ecosystems responsibly while protecting biodiversity and maintaining resources.",
+  "Conservation of Natural Resources":"Conservation protects resources such as forests, soil, water and wildlife for present and future needs.",
+  "Pests and Diseases of Crops":"Crop pests and pathogens can reduce yield. Management may involve cultural, biological and carefully controlled chemical methods.",
+  "Reproductive Systems in Vertebrates":"Vertebrates have reproductive organs that produce gametes and support reproduction. Systems differ among groups.",
+  "Reproductive Systems in Plants":"Flowering plants have reproductive structures. The stamen produces pollen and the carpel contains the ovary and ovules.",
+  "Pollination in Plants":"Pollination is transfer of pollen from anther to stigma. It can occur within the same flower/plant or between different plants of a species.",
+  "Regulation of Internal Environment":"Homeostasis keeps internal conditions within suitable limits, including temperature, water balance and blood glucose.",
+  "Nervous Co-ordination":"The nervous system receives information, processes it and coordinates responses using electrical impulses and chemical signals.",
+  "Sense Organs":"Sense organs contain receptor cells that detect stimuli such as light, sound, chemicals, pressure and temperature.",
+  "Ecology of Population":"Population ecology examines population size, density, distribution, growth and factors that affect populations.",
+  "Balance in Nature":"Natural communities are influenced by interactions including competition, predation, mutualism and decomposition.",
+  "Reproductive Systems and Reproduction in Humans":"Human reproduction involves specialized reproductive organs, production of gametes, fertilization and development.",
+  "Development of New Seeds":"After fertilization in flowering plants, the ovule develops into a seed containing an embryo and stored food or food-storage tissue.",
+  "Fruits":"A fruit usually develops from the ovary after fertilization. Fruits help protect and disperse seeds.",
+  "Reproductive Behaviours":"Reproductive behaviour includes behaviours that help organisms find mates, attract partners, compete and care for offspring.",
+  "Biology of Heredity (Genetics)":"Genetics studies inheritance. Genes are units of heredity carried in DNA, and alleles are alternative forms of a gene.",
+  "Variation and Evolution":"Variation describes differences among individuals. Some variation is inherited and can contribute to evolutionary change.",
+  "Adaptation for Survival":"Adaptations are inherited features that can help organisms survive and reproduce in particular environments.",
+  "Evolution":"Evolution is change in inherited characteristics of populations over generations. Natural selection is one mechanism that can drive evolutionary change."
+ };
+ const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+ function data(){try{return JSON.parse(localStorage.getItem(KEY))||{bookmarks:[],history:[]};}catch(e){return {bookmarks:[],history:[]};}}
+ function save(d){localStorage.setItem(KEY,JSON.stringify(d));}
+ function lesson(t){
+   const base=(window.lessons&&window.lessons[t])||fallback[t]||"Study the definition, key concepts, examples and applications of this topic.";
+   const kp=(window.keyPoints&&window.keyPoints[t]);
+   return {base:base,kp:kp};
+ }
+ window.v6Class=function(c){cls=c;listMode="topics";current=null;document.getElementById("v6Search").value="";document.getElementById("v6Detail").innerHTML="";v6RenderList();};
+ window.v6RenderList=function(){
+   const q=(document.getElementById("v6Search").value||"").toLowerCase();
+   const d=data(), arr=listMode==="bookmarks"?d.bookmarks:(classes[cls]||[]);
+   const filtered=arr.filter(t=>t.toLowerCase().includes(q));
+   const el=document.getElementById("v6List");
+   if(!filtered.length){el.innerHTML="<div class='v6-empty'>No topics found.</div>";return;}
+   el.innerHTML=filtered.map(t=>{
+     const done=(window.__completed&&window.__completed.includes(t))||false;
+     return "<div class='v6-topic'><button onclick='v6Open("+JSON.stringify(t)+")'>"+(done?"✅ ":"📖 ")+esc(t)+"</button></div>";
+   }).join("");
+ };
+ window.v6Open=function(t){
+   current=t; const d=data(), saved=d.bookmarks.includes(t), L=lesson(t);
+   const kp=L.kp?String(L.kp):"Review the definition, key structures/processes, examples and importance.";
+   document.getElementById("v6Detail").innerHTML=
+    "<div class='v6-panel' style='margin-top:12px'><span class='v6-chip'>"+esc(cls)+"</span><h2>"+esc(t)+"</h2>"+
+    "<div class='v6-lesson'><h3>📚 Learn</h3><p>"+esc(String(L.base)).replace(/\n/g,"<br>")+"</p>"+
+    "<h3>⭐ Key Points</h3><p>"+esc(kp).replace(/\n/g,"<br>")+"</p></div>"+
+    "<button class='v6-tabs' style='border:0' onclick='v6Bookmark("+JSON.stringify(t)+")'>"+(saved?"🔖 Remove Bookmark":"🔖 Bookmark Topic")+"</button>"+
+    "<button class='v6-tabs' style='border:0' onclick='v6Mark("+JSON.stringify(t)+")'>✅ Mark as Studied</button></div>";
+ };
+ window.v6Bookmark=function(t){let d=data();d.bookmarks=d.bookmarks.includes(t)?d.bookmarks.filter(x=>x!==t):d.bookmarks.concat(t);save(d);v6Open(t);};
+ window.v6Mark=function(t){
+   if(window.markTopicComplete)window.markTopicComplete(t);
+   let d=data();d.history.unshift({topic:t,date:new Date().toLocaleString()});d.history=d.history.slice(0,50);save(d);
+   document.getElementById("v6Detail").insertAdjacentHTML("beforeend","<p><b>✅ Saved to your study history.</b></p>");
+   v6RenderList();
+ };
+ window.v6ShowBookmarks=function(){listMode="bookmarks";current=null;document.getElementById("v6Search").value="";document.getElementById("v6Detail").innerHTML="<h3>🔖 Saved Topics</h3>";v6RenderList();};
+ window.v6ShowHistory=function(){
+   const d=data(), el=document.getElementById("v6List");
+   document.getElementById("v6Detail").innerHTML="<h3>📊 Study History</h3>";
+   if(!d.history.length){el.innerHTML="<div class='v6-empty'>No study history yet. Open a topic and mark it as studied.</div>";return;}
+   el.innerHTML=d.history.map((x,i)=>"<div class='v6-history'><b>"+esc(x.topic)+"</b><br><small>"+esc(x.date)+"</small></div>").join("");
+ };
+ document.addEventListener("DOMContentLoaded",function(){
+   window.__completed=(function(){try{return JSON.parse(localStorage.getItem("biotutor_v3_progress"))?.completed||[];}catch(e){return[];}})();
+   v6RenderList();
+ });
+})();
+</script>
+
+<script>
+let v7InstallPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  v7InstallPrompt = e;
+  const b = document.getElementById("v7InstallBtn");
+  if (b) b.style.display = "inline-block";
+});
+
+function v7GoTo(id){
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function v7PremiumInfo(){
+  const m=document.getElementById("v7PremiumModal");
+  if(m) m.hidden=false;
+}
+
+function v7CloseModal(){
+  const m=document.getElementById("v7PremiumModal");
+  if(m) m.hidden=true;
+}
+
+async function v7Install(){
+  if(!v7InstallPrompt){
+    const note=document.getElementById("v7InstallNote");
+    if(note) note.textContent="Your browser may not support installation for this local HTML file yet.";
+    return;
+  }
+  v7InstallPrompt.prompt();
+  await v7InstallPrompt.userChoice;
+  v7InstallPrompt=null;
+}
+
+function v7RefreshStats(){
+  try{
+    const completed = JSON.parse(localStorage.getItem("completedTopics") || "[]");
+    const points = localStorage.getItem("quizPoints") || localStorage.getItem("quizScore") || "0";
+    const streak = localStorage.getItem("studyStreak") || localStorage.getItem("streak") || "0";
+    const a=document.getElementById("v7TopicsDone");
+    const b=document.getElementById("v7QuizPts");
+    const c=document.getElementById("v7Streak");
+    if(a) a.textContent=Array.isArray(completed)?completed.length:0;
+    if(b) b.textContent=Number(points)||0;
+    if(c) c.textContent=Number(streak)||0;
+  }catch(e){}
+}
+document.addEventListener("DOMContentLoaded", v7RefreshStats);
+setInterval(v7RefreshStats, 1500);
+</script>
+
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script><script id="diagram-lab-js">(function(){const D=[['Human Skeleton','🦴',['Skull','Rib cage','Vertebral column','Pelvis','Humerus','Radius','Ulna','Femur','Tibia','Fibula']],['Animal Cell','🔬',['Cell membrane','Cytoplasm','Nucleus','Mitochondrion','Vacuole','Ribosomes']],['Plant Cell','🌱',['Cell wall','Cell membrane','Cytoplasm','Nucleus','Chloroplast','Large vacuole']],['Human Heart','❤️',['Right atrium','Right ventricle','Left atrium','Left ventricle','Aorta','Vena cava','Pulmonary artery','Pulmonary vein']],['Human Digestive System','🍽️',['Mouth','Oesophagus','Stomach','Liver','Pancreas','Small intestine','Large intestine','Rectum']],['Human Respiratory System','🫁',['Nasal cavity','Trachea','Bronchi','Lungs','Diaphragm']],['Human Urinary System','💧',['Kidneys','Ureters','Bladder','Urethra']],['Human Nervous System','🧠',['Brain','Spinal cord','Peripheral nerves']],['Human Eye','👁️',['Cornea','Iris','Lens','Retina','Optic nerve']],['Human Ear','👂',['Pinna','Ear canal','Eardrum','Cochlea','Auditory nerve']],['Flower','🌸',['Sepal','Petal','Anther','Filament','Stigma','Style','Ovary','Ovule']],['Leaf','🍃',['Lamina','Midrib','Veins','Petiole']],['Root','🌱',['Root cap','Root hair','Zone of elongation','Root tip']],['Seed','🌰',['Seed coat','Cotyledon','Embryo','Plumule','Radicle']],['Amoeba','🦠',['Cell membrane','Cytoplasm','Nucleus','Pseudopodium','Food vacuole']],['Paramecium','🦠',['Cilia','Oral groove','Nucleus','Contractile vacuole','Food vacuole']],['Fish','🐟',['Gills','Operculum','Fins','Lateral line','Tail']],['Insect / Grasshopper','🦗',['Head','Thorax','Abdomen','Antenna','Wings','Legs']]];function e(x){return String(x).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}function art(n){if(n==='Human Skeleton')return '<circle cx="115" cy="42" r="20" fill="none" stroke="currentColor" stroke-width="5"/><path d="M115 62v105M75 88q40 25 80 0M78 90l-25 55M152 90l25 55M115 167l-30 68M115 167l30 68M85 235l-12 35M145 235l12 35" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>';if(n==='Plant Cell')return '<rect x="35" y="35" width="170" height="190" rx="22" fill="none" stroke="currentColor" stroke-width="7"/><rect x="47" y="47" width="146" height="166" rx="18" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="120" cy="130" r="30" fill="none" stroke="currentColor" stroke-width="5"/><ellipse cx="72" cy="82" rx="18" ry="8" fill="none" stroke="currentColor" stroke-width="4"/><ellipse cx="166" cy="180" rx="18" ry="8" fill="none" stroke="currentColor" stroke-width="4"/>';if(n==='Animal Cell')return '<ellipse cx="120" cy="135" rx="88" ry="72" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="120" cy="135" r="30" fill="none" stroke="currentColor" stroke-width="5"/><ellipse cx="75" cy="105" rx="18" ry="9" fill="none" stroke="currentColor" stroke-width="4"/><ellipse cx="170" cy="165" rx="18" ry="9" fill="none" stroke="currentColor" stroke-width="4"/>';if(n==='Human Heart')return '<path d="M120 205C45 150 70 75 120 105C170 75 195 150 120 205Z" fill="none" stroke="currentColor" stroke-width="6"/><path d="M120 105v100M80 125h80" stroke="currentColor" stroke-width="3"/>';if(n==='Flower')return '<path d="M120 90v150M120 150Q80 125 55 145M120 175Q160 145 185 165" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="120" cy="90" r="15" fill="none" stroke="currentColor" stroke-width="4"/><ellipse cx="120" cy="60" rx="28" ry="18" fill="none" stroke="currentColor" stroke-width="4"/><ellipse cx="90" cy="85" rx="28" ry="18" fill="none" stroke="currentColor" stroke-width="4"/><ellipse cx="150" cy="85" rx="28" ry="18" fill="none" stroke="currentColor" stroke-width="4"/>';return '<ellipse cx="120" cy="135" rx="78" ry="62" fill="none" stroke="currentColor" stroke-width="5"/><path d="M65 135Q120 65 175 135Q120 205 65 135" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="120" cy="135" r="16" fill="none" stroke="currentColor" stroke-width="4"/>'}function render(){let g=document.getElementById('diagramGrid');if(!g)return;g.innerHTML=D.map(d=>'<div class="diagram-card"><h3>'+d[1]+' '+e(d[0])+'</h3><svg class="diagram-svg" viewBox="0 0 390 280"><text x="18" y="22" font-size="14" font-weight="700">'+e(d[0])+'</text><g>'+art(d[0])+'</g>'+d[2].slice(0,6).map((x,i)=>{let y=48+i*35;return '<line x1="205" y1="'+y+'" x2="245" y2="'+y+'" stroke="currentColor"/><text x="250" y="'+(y+4)+'" font-size="11">'+e(x)+'</text>'}).join('')+'</svg><div class="diagram-label"><b>Labels:</b> '+d[2].map(e).join(' • ')+'</div></div>').join('')}let c,ctx,draw=false,erase=false;function setup(){c=document.getElementById('drawCanvas');if(!c)return;function resize(){let r=c.getBoundingClientRect(),z=devicePixelRatio||1;c.width=r.width*z;c.height=r.height*z;ctx=c.getContext('2d');ctx.setTransform(z,0,0,z,0,0);ctx.lineWidth=3;ctx.lineCap='round'}resize();addEventListener('resize',resize);function pos(x){let r=c.getBoundingClientRect(),t=x.touches?x.touches[0]:x;return[t.clientX-r.left,t.clientY-r.top]}function s(x){draw=true;let p=pos(x);ctx.beginPath();ctx.moveTo(p[0],p[1]);x.preventDefault()}function m(x){if(!draw)return;let p=pos(x);ctx.strokeStyle=erase?'#fff':'#222';ctx.lineTo(p[0],p[1]);ctx.stroke();x.preventDefault()}c.onmousedown=s;c.onmousemove=m;c.onmouseup=()=>draw=false;c.onmouseleave=()=>draw=false;c.ontouchstart=s;c.ontouchmove=m;c.ontouchend=()=>draw=false}window.clearDraw=function(){if(ctx)ctx.clearRect(0,0,c.width,c.height)};window.toggleEraser=function(){erase=!erase};document.addEventListener('DOMContentLoaded',()=>{render();setup()})})();</script>
+</body></html>
