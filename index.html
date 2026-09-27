@@ -332,27 +332,46 @@ document.getElementById("search").addEventListener("input",render);render();
     if(ok)addQuizPoints(10);
   };
 
-  window.askBioTutorV3=function(){
-    const input=document.getElementById("v3Question"), box=document.getElementById("v3Chat");
-    if(!input||!box)return;
-    const q=input.value.trim(); if(!q)return;
-    box.innerHTML+='<div class="ai-msg user"><b>You:</b> '+esc(q)+'</div>';
-    const a=tutorAnswer(q);
-    box.innerHTML+='<div class="ai-msg"><b>BioTutor:</b> '+a+'</div>';
-    input.value="";
-  };
-  function tutorAnswer(q){
-    const x=q.toLowerCase();
-    if(x.includes("cell"))return "A cell is the basic structural and functional unit of life. Animal and plant cells both have a cell membrane, cytoplasm and nucleus, while plant cells also have structures such as a cell wall and chloroplasts.";
-    if(x.includes("photosynthesis"))return "Photosynthesis is the process by which green plants use light energy to make food from carbon dioxide and water, releasing oxygen.";
-    if(x.includes("respiration"))return "Respiration releases usable energy from food. In aerobic respiration, oxygen is used and carbon dioxide and water are produced.";
-    if(x.includes("ecosystem"))return "An ecosystem includes living organisms and the non-living factors in their environment, interacting with one another.";
-    if(x.includes("mitosis"))return "Mitosis produces two genetically similar daughter cells and is important for growth, repair and replacement of cells.";
-    if(x.includes("meiosis"))return "Meiosis is a type of cell division that produces cells with half the usual chromosome number and helps create genetic variation.";
-    if(x.includes("gene")||x.includes("genetics"))return "A gene is a unit of heredity carried in DNA. Genetics studies how characteristics are inherited and how variation occurs.";
-    if(x.includes("support"))return "Support systems help organisms maintain shape and resist forces. In plants, tissues such as xylem and supporting tissues contribute to support.";
-    return "Good Biology question! Try asking about a specific topic, for example: “What is photosynthesis?”, “Explain the cell”, or “What is mitosis?”";
+  window.askBioTutorV3=async function(){
+  const input=document.getElementById("v3Question");
+  const box=document.getElementById("v3Chat");
+
+  if(!input || !box)return;
+
+  const q=input.value.trim();
+  if(!q)return;
+
+  box.innerHTML+='<div class="ai-msg user"><b>You:</b> '+q+'</div>';
+
+  input.value="";
+
+  box.innerHTML+='<div class="ai-msg"><b>BioTutor:</b> Thinking...</div>';
+
+  try{
+    const response=await fetch("https://biotutor-backend.onrender.com/ask",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        question:q
+      })
+    });
+
+    const data=await response.json();
+
+    box.lastElementChild.innerHTML=
+      '<b>BioTutor:</b> '+(data.answer || "Sorry, I couldn't answer that.");
+  }catch(error){
+    box.lastElementChild.innerHTML=
+      '<b>BioTutor:</b> Sorry, I’m having trouble connecting right now.';
   }
+};
+    
+  
+    
+    
+  
   function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 
   // Add a tutor panel if the existing app does not have a useful AI interface.
