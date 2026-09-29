@@ -367,16 +367,11 @@ document.getElementById("search").addEventListener("input",render);render();
       '<b>BioTutor:</b> Sorry, I’m having trouble connecting right now.';
   }
 };
-    
-  
-    
-    
-  
   function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 
   // Add a tutor panel if the existing app does not have a useful AI interface.
   function addTutor(){
-  if(document.getElementById("v3-tutor")) return;
+  if(document.getElementById("v3-tutor")) document.getElementById("v3-tutor").remove();
 
   const el=document.createElement("div");
   el.id="v3-tutor";
