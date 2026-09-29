@@ -375,7 +375,172 @@ document.getElementById("search").addEventListener("input",render);render();
   function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 
   // Add a tutor panel if the existing app does not have a useful AI interface.
-  function addTutor(){
+  function addTutor(){function addTutor(){
+  if(document.getElementById("v3-tutor")) return;
+
+  const el=document.createElement("div");
+  el.id="v3-tutor";
+
+  const style=document.createElement("style");
+  style.textContent=`
+    #v3-tutor{
+      margin:18px auto;
+      max-width:720px;
+      border-radius:24px;
+      overflow:hidden;
+      background:#ffffff;
+      color:#17202a;
+      box-shadow:0 12px 35px rgba(0,0,0,.15);
+      border:1px solid #e5e7eb;
+      font-family:Arial,sans-serif;
+    }
+
+    #v3-head{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:16px;
+      background:#f4fbf6;
+      border-bottom:1px solid #e5e7eb;
+    }
+
+    #v3-face{
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#ffffff;
+      border:2px solid #35a853;
+      font-size:30px;
+      flex-shrink:0;
+    }
+
+    #v3-name{
+      font-weight:800;
+      font-size:18px;
+    }
+
+    #v3-status{
+      font-size:13px;
+      margin-top:3px;
+      color:#35a853;
+    }
+
+    #v3Chat{
+      min-height:180px;
+      max-height:420px;
+      overflow-y:auto;
+      padding:16px;
+      background:#fafafa;
+    }
+
+    .ai-msg{
+      margin:10px 0;
+      padding:11px 14px;
+      border-radius:16px;
+      line-height:1.5;
+      max-width:88%;
+      word-wrap:break-word;
+    }
+
+    .ai-msg.user{
+      margin-left:auto;
+      background:#35a853;
+      color:white;
+      border-bottom-right-radius:5px;
+    }
+
+    .ai-msg:not(.user){
+      margin-right:auto;
+      background:white;
+      border:1px solid #e5e7eb;
+      border-bottom-left-radius:5px;
+    }
+
+    #v3-composer{
+      display:flex;
+      gap:8px;
+      padding:12px;
+      background:white;
+      border-top:1px solid #e5e7eb;
+    }
+
+    #v3Question{
+      flex:1;
+      min-width:0;
+      border:1px solid #d1d5db;
+      border-radius:22px;
+      padding:12px 15px;
+      font-size:15px;
+      outline:none;
+    }
+
+    #v3Question:focus{
+      border-color:#35a853;
+      box-shadow:0 0 0 3px rgba(53,168,83,.12);
+    }
+
+    #v3Send{
+      width:46px;
+      height:46px;
+      border:0;
+      border-radius:50%;
+      background:#35a853;
+      color:white;
+      font-size:20px;
+      cursor:pointer;
+    }
+
+    #v3Send:active{
+      transform:scale(.94);
+    }
+
+    #v3-tools{
+      padding:0 12px 12px;
+      background:white;
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  el.innerHTML=`
+    <div id="v3-head">
+      <div id="v3-face">🧑🏽‍🔬</div>
+      <div>
+        <div id="v3-name">BioTutor AI</div>
+        <div id="v3-status">● Online • Your Biology buddy</div>
+      </div>
+    </div>
+
+    <div id="v3Chat">
+      <div class="ai-msg">
+        <b>BioTutor:</b> Hey! 🧬 I'm your Biology buddy. Ask me anything about Biology — and don't worry, I promise not to make Biology boring 😂
+      </div>
+    </div>
+
+    <div id="v3-tools"></div>
+
+    <div id="v3-composer">
+      <input id="v3Question" type="text"
+        placeholder="Ask BioTutor a Biology question...">
+
+      <button id="v3Send" type="button" aria-label="Send">➤</button>
+    </div>
+  `;
+
+  document.body.appendChild(el);
+
+  document.getElementById("v3Send").onclick=window.askBioTutorV3;
+
+  document.getElementById("v3Question").addEventListener("keydown",function(e){
+    if(e.key==="Enter"){
+      e.preventDefault();
+      window.askBioTutorV3();
+    }
+  });
+}
     if(document.getElementById("v3-tutor"))return;
     const el=document.createElement("div"); el.id="v3-tutor"; el.className="card";
     el.innerHTML='<h2>🤖 Ask BioTutor</h2><div id="v3Chat" class="ai-box"><div class="ai-msg">Ask me a Biology question in simple words.</div></div><div class="action-row"><input id="v3Question" placeholder="e.g. What is photosynthesis?" style="flex:1;padding:11px;border:1px solid #ddd;border-radius:10px"><button class="action-btn" onclick="askBioTutorV3()">Ask</button></div>';
