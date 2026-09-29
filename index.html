@@ -375,7 +375,7 @@ document.getElementById("search").addEventListener("input",render);render();
   function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 
   // Add a tutor panel if the existing app does not have a useful AI interface.
-  function addTutor(){function addTutor(){
+  function addTutor(){
   if(document.getElementById("v3-tutor")) return;
 
   const el=document.createElement("div");
