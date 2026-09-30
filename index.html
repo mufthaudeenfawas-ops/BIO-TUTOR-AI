@@ -367,184 +367,710 @@ document.getElementById("search").addEventListener("input",render);render();
       '<b>BioTutor:</b> Sorry, I’m having trouble connecting right now.';
   }
 };
-  function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+  function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+<script id="biotutor-modern-ai">
+(function(){
 
-  // Add a tutor panel if the existing app does not have a useful AI interface.
+  const API_URL = "https://biotutor-backend.onrender.com";
+
   function addTutor(){
-  if(document.getElementById("v3-tutor")) document.getElementById("v3-tutor").remove();
 
-  const el=document.createElement("div");
-  el.id="v3-tutor";
+    if(document.getElementById("biotutor-modern-tutor")) return;
 
-  const style=document.createElement("style");
-  style.textContent=`
-    #v3-tutor{
-      margin:18px auto;
-      max-width:720px;
-      border-radius:24px;
-      overflow:hidden;
-      background:#ffffff;
-      color:#17202a;
-      box-shadow:0 12px 35px rgba(0,0,0,.15);
-      border:1px solid #e5e7eb;
-      font-family:Arial,sans-serif;
-    }
+    const tutor = document.createElement("section");
 
-    #v3-head{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:16px;
-      background:#f4fbf6;
-      border-bottom:1px solid #e5e7eb;
-    }
+    tutor.id = "biotutor-modern-tutor";
 
-    #v3-face{
-      width:52px;
-      height:52px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#ffffff;
-      border:2px solid #35a853;
-      font-size:30px;
-      flex-shrink:0;
-    }
+    tutor.innerHTML = `
+      <style>
 
-    #v3-name{
-      font-weight:800;
-      font-size:18px;
-    }
+        #biotutor-modern-tutor{
+          width:100%;
+          max-width:760px;
+          margin:20px auto;
+          font-family:Arial,sans-serif;
+          color:#123c36;
+        }
 
-    #v3-status{
-      font-size:13px;
-      margin-top:3px;
-      color:#35a853;
-    }
+        #biotutor-modern-tutor *{
+          box-sizing:border-box;
+        }
 
-    #v3Chat{
-      min-height:180px;
-      max-height:420px;
-      overflow-y:auto;
-      padding:16px;
-      background:#fafafa;
-    }
+        .bt-ai-card{
+          background:#ffffff;
+          border:1px solid #dcebe8;
+          border-radius:28px;
+          overflow:hidden;
+          box-shadow:0 12px 35px rgba(0,0,0,.10);
+        }
 
-    .ai-msg{
-      margin:10px 0;
-      padding:11px 14px;
-      border-radius:16px;
-      line-height:1.5;
-      max-width:88%;
-      word-wrap:break-word;
-    }
+        .bt-ai-header{
+          padding:18px;
+          display:flex;
+          align-items:center;
+          gap:14px;
+          background:linear-gradient(135deg,#073f3a,#087f72);
+          color:white;
+        }
 
-    .ai-msg.user{
-      margin-left:auto;
-      background:#35a853;
-      color:white;
-      border-bottom-right-radius:5px;
-    }
+        .bt-ai-face{
+          width:58px;
+          height:58px;
+          min-width:58px;
+          border-radius:50%;
+          background:white;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:31px;
+          border:3px solid rgba(255,255,255,.7);
+          box-shadow:0 5px 15px rgba(0,0,0,.18);
+        }
 
-    .ai-msg:not(.user){
-      margin-right:auto;
-      background:white;
-      border:1px solid #e5e7eb;
-      border-bottom-left-radius:5px;
-    }
+        .bt-ai-title{
+          flex:1;
+        }
 
-    #v3-composer{
-      display:flex;
-      gap:8px;
-      padding:12px;
-      background:white;
-      border-top:1px solid #e5e7eb;
-    }
+        .bt-ai-title h2{
+          margin:0;
+          font-size:20px;
+        }
 
-    #v3Question{
-      flex:1;
-      min-width:0;
-      border:1px solid #d1d5db;
-      border-radius:22px;
-      padding:12px 15px;
-      font-size:15px;
-      outline:none;
-    }
+        .bt-ai-title p{
+          margin:5px 0 0;
+          font-size:13px;
+          opacity:.88;
+        }
 
-    #v3Question:focus{
-      border-color:#35a853;
-      box-shadow:0 0 0 3px rgba(53,168,83,.12);
-    }
+        .bt-online{
+          font-size:12px;
+          white-space:nowrap;
+          background:rgba(255,255,255,.14);
+          padding:7px 10px;
+          border-radius:20px;
+        }
 
-    #v3Send{
-      width:46px;
-      height:46px;
-      border:0;
-      border-radius:50%;
-      background:#35a853;
-      color:white;
-      font-size:20px;
-      cursor:pointer;
-    }
+        .bt-online-dot{
+          display:inline-block;
+          width:8px;
+          height:8px;
+          border-radius:50%;
+          background:#55e391;
+          margin-right:5px;
+        }
 
-    #v3Send:active{
-      transform:scale(.94);
-    }
+        .bt-chat{
+          min-height:300px;
+          max-height:520px;
+          overflow-y:auto;
+          padding:18px;
+          background:#f7fbfa;
+        }
 
-    #v3-tools{
-      padding:0 12px 12px;
-      background:white;
-    }
-  `;
+        .bt-message{
+          display:flex;
+          margin:12px 0;
+        }
 
-  document.head.appendChild(style);
+        .bt-message.user{
+          justify-content:flex-end;
+        }
 
-  el.innerHTML=`
-    <div id="v3-head">
-      <div id="v3-face">🧑🏽‍🔬</div>
-      <div>
-        <div id="v3-name">BioTutor AI</div>
-        <div id="v3-status">● Online • Your Biology buddy</div>
+        .bt-bubble{
+          max-width:86%;
+          padding:13px 15px;
+          border-radius:18px;
+          line-height:1.55;
+          font-size:15px;
+          white-space:pre-wrap;
+        }
+
+        .bt-message.ai .bt-bubble{
+          background:white;
+          border:1px solid #e1eeeb;
+          border-bottom-left-radius:5px;
+        }
+
+        .bt-message.user .bt-bubble{
+          background:#087f72;
+          color:white;
+          border-bottom-right-radius:5px;
+        }
+
+        .bt-ai-small{
+          font-size:11px;
+          font-weight:bold;
+          margin-bottom:4px;
+          opacity:.65;
+        }
+
+        .bt-thinking{
+          display:none;
+          padding:10px 18px;
+          font-size:13px;
+          color:#087f72;
+          background:#f7fbfa;
+        }
+
+        .bt-thinking span{
+          display:inline-block;
+          animation:btpulse 1.2s infinite;
+        }
+
+        @keyframes btpulse{
+          0%,100%{opacity:.25}
+          50%{opacity:1}
+        }
+
+        .bt-tools{
+          display:flex;
+          gap:8px;
+          padding:12px 15px 5px;
+          background:white;
+          overflow-x:auto;
+        }
+
+        .bt-tool{
+          border:1px solid #d8e8e5;
+          background:#f6fbfa;
+          border-radius:14px;
+          padding:9px 12px;
+          font-size:13px;
+          white-space:nowrap;
+          cursor:pointer;
+        }
+
+        .bt-tool:active{
+          transform:scale(.97);
+        }
+
+        .bt-composer{
+          padding:12px 15px 16px;
+          background:white;
+        }
+
+        .bt-input-row{
+          display:flex;
+          align-items:flex-end;
+          gap:8px;
+          border:1px solid #d7e7e4;
+          border-radius:20px;
+          padding:7px;
+          background:#fafdfc;
+        }
+
+        .bt-question{
+          flex:1;
+          border:0;
+          outline:none;
+          background:transparent;
+          resize:none;
+          min-height:42px;
+          max-height:120px;
+          padding:10px;
+          font-size:15px;
+          color:#123c36;
+        }
+
+        .bt-action{
+          width:44px;
+          height:44px;
+          border:0;
+          border-radius:50%;
+          cursor:pointer;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:19px;
+        }
+
+        .bt-mic{
+          background:#e7f6f3;
+        }
+
+        .bt-send{
+          background:#087f72;
+          color:white;
+        }
+
+        .bt-footer{
+          padding:0 17px 15px;
+          background:white;
+          font-size:11px;
+          color:#78908b;
+          text-align:center;
+        }
+
+        .bt-image-preview{
+          display:none;
+          padding:10px;
+          background:#f7fbfa;
+          border-radius:14px;
+          margin-bottom:8px;
+        }
+
+        .bt-image-preview img{
+          max-width:150px;
+          max-height:150px;
+          border-radius:12px;
+        }
+
+        .bt-image-input{
+          display:none;
+        }
+
+        @media(max-width:520px){
+          #biotutor-modern-tutor{
+            margin:12px 0;
+          }
+
+          .bt-ai-card{
+            border-radius:22px;
+          }
+
+          .bt-chat{
+            min-height:280px;
+          }
+
+          .bt-bubble{
+            max-width:91%;
+          }
+
+          .bt-online{
+            display:none;
+          }
+        }
+
+      </style>
+
+      <div class="bt-ai-card">
+
+        <div class="bt-ai-header">
+
+          <div class="bt-ai-face">🧬</div>
+
+          <div class="bt-ai-title">
+            <h2>BioTutor AI</h2>
+            <p>Your personal Biology learning assistant</p>
+          </div>
+
+          <div class="bt-online">
+            <span class="bt-online-dot"></span>
+            Online
+          </div>
+
+        </div>
+
+        <div id="bt-chat" class="bt-chat">
+
+          <div class="bt-message ai">
+            <div class="bt-bubble">
+              <div class="bt-ai-small">BioTutor AI</div>
+              👋 Hey! I'm BioTutor.
+
+              Ask me any Biology question and I'll explain it step-by-step in student-friendly language.
+
+              You can also ask me to explain a diagram or help you prepare for WAEC/NECO.
+            </div>
+          </div>
+
+        </div>
+
+        <div id="bt-thinking" class="bt-thinking">
+          🧠 <span>BioTutor is thinking...</span>
+        </div>
+
+        <div class="bt-tools">
+
+          <button class="bt-tool" id="bt-image-btn">
+            📷 Image
+          </button>
+
+          <button class="bt-tool" id="bt-quiz-btn">
+            📝 Quiz
+          </button>
+
+          <button class="bt-tool" id="bt-topic-btn">
+            🧬 Topic
+          </button>
+
+          <button class="bt-tool" id="bt-clear-btn">
+            🗑️ Clear
+          </button>
+
+        </div>
+
+        <div class="bt-composer">
+
+          <div id="bt-image-preview" class="bt-image-preview"></div>
+
+          <div class="bt-input-row">
+
+            <textarea
+              id="bt-question"
+              class="bt-question"
+              placeholder="Ask BioTutor a Biology question..."
+              rows="1"
+            ></textarea>
+
+            <button
+              id="bt-mic"
+              class="bt-action bt-mic"
+              type="button"
+              aria-label="Voice input"
+            >
+              🎤
+            </button>
+
+            <button
+              id="bt-send"
+              class="bt-action bt-send"
+              type="button"
+              aria-label="Send"
+            >
+              ➤
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="bt-footer">
+          BioTutor AI • Learn Biology smarter
+        </div>
+
+        <input
+          id="bt-image-input"
+          class="bt-image-input"
+          type="file"
+          accept="image/*"
+        >
+
       </div>
-    </div>
+    `;
 
-    <div id="v3Chat">
-      <div class="ai-msg">
-        <b>BioTutor:</b> Hey! 🧬 I'm your Biology buddy. Ask me anything about Biology — and don't worry, I promise not to make Biology boring 😂
-      </div>
-    </div>
+    const target =
+      document.getElementById("v3-tools") ||
+      document.getElementById("v4Area") ||
+      document.body;
 
-    <div id="v3-tools"></div>
+    target.parentNode.insertBefore(tutor,target);
 
-    <div id="v3-composer">
-      <input id="v3Question" type="text"
-        placeholder="Ask BioTutor a Biology question...">
+    setupBioTutor();
 
-      <button id="v3Send" type="button" aria-label="Send">➤</button>
-    </div>
-  `;
-
-  document.body.appendChild(el);
-
-  document.getElementById("v3Send").onclick=window.askBioTutorV3;
-
-  document.getElementById("v3Question").addEventListener("keydown",function(e){
-    if(e.key==="Enter"){
-      e.preventDefault();
-      window.askBioTutorV3();
-    }
-  });
-}
-    if(document.getElementById("v3-tutor"))return;
-    const el=document.createElement("div"); el.id="v3-tutor"; el.className="card";
-    el.innerHTML='<h2>🤖 Ask BioTutor</h2><div id="v3Chat" class="ai-box"><div class="ai-msg">Ask me a Biology question in simple words.</div></div><div class="action-row"><input id="v3Question" placeholder="e.g. What is photosynthesis?" style="flex:1;padding:11px;border:1px solid #ddd;border-radius:10px"><button class="action-btn" onclick="askBioTutorV3()">Ask</button></div>';
-    const tools=document.getElementById("v3-tools"); tools.parentNode.insertBefore(el,tools.nextSibling);
   }
-  document.addEventListener("DOMContentLoaded",function(){addTutor();updateV3Progress();});
+
+
+  function addMessage(text,type){
+
+    const chat=document.getElementById("bt-chat");
+
+    if(!chat) return;
+
+    const message=document.createElement("div");
+
+    message.className="bt-message "+type;
+
+    const bubble=document.createElement("div");
+
+    bubble.className="bt-bubble";
+
+    if(type==="ai"){
+      bubble.innerHTML=
+        '<div class="bt-ai-small">BioTutor AI</div>'+
+        escapeHTML(text).replace(/\n/g,"<br>");
+    }else{
+      bubble.textContent=text;
+    }
+
+    message.appendChild(bubble);
+
+    chat.appendChild(message);
+
+    chat.scrollTop=chat.scrollHeight;
+
+  }
+
+
+  function escapeHTML(value){
+
+    return String(value)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+
+  }
+
+
+  async function askBioTutor(){
+
+    const input=document.getElementById("bt-question");
+
+    if(!input) return;
+
+    const question=input.value.trim();
+
+    if(!question) return;
+
+    addMessage(question,"user");
+
+    input.value="";
+
+    const thinking=document.getElementById("bt-thinking");
+
+    if(thinking) thinking.style.display="block";
+
+    try{
+
+      const response=await fetch(API_URL,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          question:question
+        })
+      });
+
+      if(!response.ok){
+
+        throw new Error("Backend returned "+response.status);
+
+      }
+
+      const data=await response.json();
+
+      const answer=
+        data.answer ||
+        data.response ||
+        data.message ||
+        "Sorry, I couldn't get an answer from the Biology AI.";
+
+      addMessage(answer,"ai");
+
+    }catch(error){
+
+      console.error("BioTutor error:",error);
+
+      addMessage(
+        "Sorry, BioTutor could not connect to the AI server right now. Please check the backend connection and try again.",
+        "ai"
+      );
+
+    }finally{
+
+      if(thinking) thinking.style.display="none";
+
+    }
+
+  }
+
+
+  function setupBioTutor(){
+
+    const send=document.getElementById("bt-send");
+
+    const input=document.getElementById("bt-question");
+
+    const mic=document.getElementById("bt-mic");
+
+    const imageBtn=document.getElementById("bt-image-btn");
+
+    const imageInput=document.getElementById("bt-image-input");
+
+    const quizBtn=document.getElementById("bt-quiz-btn");
+
+    const topicBtn=document.getElementById("bt-topic-btn");
+
+    const clearBtn=document.getElementById("bt-clear-btn");
+
+
+    if(send){
+
+      send.onclick=askBioTutor;
+
+    }
+
+
+    if(input){
+
+      input.addEventListener("keydown",function(e){
+
+        if(e.key==="Enter" && !e.shiftKey){
+
+          e.preventDefault();
+
+          askBioTutor();
+
+        }
+
+      });
+
+
+      input.addEventListener("input",function(){
+
+        this.style.height="auto";
+
+        this.style.height=Math.min(this.scrollHeight,120)+"px";
+
+      });
+
+    }
+
+
+    if(mic){
+
+      mic.onclick=function(){
+
+        const SpeechRecognition=
+          window.SpeechRecognition ||
+          window.webkitSpeechRecognition;
+
+        if(!SpeechRecognition){
+
+          alert("Voice input is not supported by this browser.");
+
+          return;
+
+        }
+
+        const recognition=new SpeechRecognition();
+
+        recognition.lang="en-NG";
+
+        recognition.interimResults=false;
+
+        recognition.start();
+
+        mic.textContent="🔴";
+
+        recognition.onresult=function(event){
+
+          input.value=event.results[0][0].transcript;
+
+          input.dispatchEvent(new Event("input"));
+
+        };
+
+        recognition.onend=function(){
+
+          mic.textContent="🎤";
+
+        };
+
+        recognition.onerror=function(){
+
+          mic.textContent="🎤";
+
+        };
+
+      };
+
+    }
+
+
+    if(imageBtn && imageInput){
+
+      imageBtn.onclick=function(){
+
+        imageInput.click();
+
+      };
+
+
+      imageInput.onchange=function(){
+
+        const file=this.files && this.files[0];
+
+        if(!file) return;
+
+        const preview=document.getElementById("bt-image-preview");
+
+        if(!preview) return;
+
+        const url=URL.createObjectURL(file);
+
+        preview.style.display="block";
+
+        preview.innerHTML=
+          '<div style="font-size:12px;margin-bottom:6px">📷 Image selected</div>'+
+          '<img src="'+url+'" alt="Biology question image">';
+
+        input.value=
+          "I have uploaded a Biology image. Please help me understand what is shown in the image.";
+
+      };
+
+    }
+
+
+    if(quizBtn){
+
+      quizBtn.onclick=function(){
+
+        input.value=
+          "Give me a Biology quiz with 5 WAEC/NECO-style questions. Ask one question at a time.";
+
+        input.dispatchEvent(new Event("input"));
+
+        input.focus();
+
+      };
+
+    }
+
+
+    if(topicBtn){
+
+      topicBtn.onclick=function(){
+
+        input.value=
+          "Teach me a complete Biology topic step-by-step, including definition, key concepts, examples, importance, diagrams I should know, and likely WAEC/NECO questions.";
+
+        input.dispatchEvent(new Event("input"));
+
+        input.focus();
+
+      };
+
+    }
+
+
+    if(clearBtn){
+
+      clearBtn.onclick=function(){
+
+        const chat=document.getElementById("bt-chat");
+
+        if(!chat) return;
+
+        chat.innerHTML=`
+          <div class="bt-message ai">
+            <div class="bt-bubble">
+              <div class="bt-ai-small">BioTutor AI</div>
+              👋 Chat cleared. What Biology topic would you like to learn?
+            </div>
+          </div>
+        `;
+
+      };
+
+    }
+
+  }
+
+
+  document.addEventListener("DOMContentLoaded",function(){
+
+    addTutor();
+
+  });
+
+
 })();
 </script>
-
 <script id="v4-js">
 (function(){
   const PKEY="biotutor_v3_progress";
