@@ -824,7 +824,7 @@ document.getElementById("search").addEventListener("input",render);render();
 
     try{
 
-      const response=await fetch(API_URL,{
+      const response=await fetch(API_URL+"/ask",{
         method:"POST",
         headers:{
           "Content-Type":"application/json"
