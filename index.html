@@ -252,7 +252,59 @@ p.innerHTML='<button class="back" onclick="closeTopic()">← Back to topics</but
 function closeTopic(){document.getElementById("panel").className="panel";document.getElementById("list").style.display="grid";document.querySelector(".tabs").style.display="flex";document.getElementById("search").style.display="block"}
 function startQuiz(){let qs=quizzes[current.topic],box=document.getElementById("quiz");box.innerHTML="<h3>🧠 Quiz</h3>";qs.forEach((z,i)=>{box.innerHTML+='<div class="quizq"><b>'+(i+1)+'. '+z.q+'</b><button onclick="check(this,true)">A. '+z.a+'</button><button onclick="check(this,false)">B. None of these</button><button onclick="check(this,false)">C. Not related to Biology</button></div>'})}
 function check(btn,correct){btn.style.background=correct?"#dff5e6":"#ffe8e8";btn.innerText+=(correct?" ✓ Correct":" ✗ Try again")}
-function askAI(){let q=document.getElementById("question").value.trim();if(!q)return;let d=lessons[current.topic];document.getElementById("answer").innerHTML='<div class="answer"><b>BioTutor AI:</b> '+d[0]+'<br><br>For a deeper answer, ask about the definition, functions, examples, differences, importance, or exam questions for <b>'+current.topic+'</b>.</div>'}
+async function askAI(){
+  const input=document.getElementById("question");
+  const answerBox=document.getElementById("answer");
+
+  if(!input || !answerBox) return;
+
+  const q=input.value.trim();
+  if(!q) return;
+
+  answerBox.innerHTML='<div class="answer"><b>BioTutor AI:</b> 🧠 Thinking...</div>';
+
+  try{
+    const response=await fetch("https://biotutor-backend.onrender.com/ask",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        question:q
+      })
+    });
+
+    if(!response.ok){
+      throw new Error("AI server returned "+response.status);
+    }
+
+    const data=await response.json();
+
+    const answer=
+      data.answer ||
+      data.response ||
+      data.message ||
+      "Sorry, I couldn't get an answer right now.";
+
+    answerBox.innerHTML=
+      '<div class="answer"><b>BioTutor AI:</b><br><br>'+
+      String(answer)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/\n/g,"<br>")+
+      '</div>';
+
+  }catch(error){
+
+    console.error("BioTutor AI error:",error);
+
+    answerBox.innerHTML=
+      '<div class="answer"><b>BioTutor AI:</b><br><br>'+
+      'Sorry, I could not connect to the AI server right now. Please try again.'+
+      '</div>';
+  }
+  }
 document.getElementById("search").addEventListener("input",render);render();
 </script>
 <script id="v3-js">
