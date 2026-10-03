@@ -829,5 +829,864 @@ footer strong{color:white}
   </div>
 </div>
 
+<!-- DRAWING MODAL -->
+<div id="drawingModal" class="modal hidden" onclick="closeDrawing(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
 
+    <div class="modal-head">
+      <h2>✏️ Drawing Board</h2>
+      <button class="icon-btn" onclick="closeDrawing()">✕</button>
+    </div>
+
+    <canvas
+      id="canvas"
+      width="700"
+      height="450"
+      style="width:100%;background:white;border-radius:15px;touch-action:none"
+    ></canvas>
+
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="secondary" onclick="clearCanvas()">Clear</button>
+      <button class="primary" onclick="saveDrawing()">Save Drawing</button>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+
+/* ================================
+   BIOTUTOR AI — MAIN CONTROLS
+================================ */
+
+const API_URL = "https://biotutor-backend.onrender.com";
+
+const SYSTEM_PROMPT = `
+You are BioTutor AI, a professional Biology teacher for Nigerian students.
+
+Founder: FWS TM.
+
+Teach Biology deeply and clearly, not with dictionary-style one-line answers.
+
+Use clear English by default. Understand Nigerian English and Nigerian Pidgin.
+When appropriate, respond naturally in Nigerian Pidgin.
+Be friendly, playful and respectful.
+
+Explain topics step by step.
+Give examples.
+For WAEC/NECO questions, explain the answer and important examination points.
+When diagrams would help, explain what should be labelled.
+If a student asks for a broad topic, teach it comprehensively.
+`;
+
+
+/* ================================
+   PAGE NAVIGATION
+================================ */
+
+function showPage(id, button){
+
+  document.querySelectorAll(".page").forEach(function(page){
+    page.classList.add("hidden");
+  });
+
+  const page = document.getElementById(id);
+
+  if(page){
+    page.classList.remove("hidden");
+  }
+
+  document.querySelectorAll(".nav button").forEach(function(btn){
+    btn.classList.remove("active");
+  });
+
+  if(button){
+    button.classList.add("active");
+  }
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+  if(id === "topics"){
+    renderTopics();
+  }
+
+  if(id === "progress"){
+    updateProgress();
+  }
+}
+
+
+/* ================================
+   TOPICS
+================================ */
+
+let currentLevel = "SSS1";
+
+const topics = {
+
+  SSS1:[
+    "Recognising Living Things",
+    "Classification of Living Things",
+    "The Cell",
+    "The Cell and Its Environment",
+    "Some Properties and Functions of the Cell",
+    "Plant Nutrition",
+    "Nutrition in Animals",
+    "Tissues and Supporting Systems",
+    "Basic Ecological Concepts",
+    "Functioning Ecosystem",
+    "Energy Transformation in Nature",
+    "Relevance of Biology to Agriculture",
+    "Micro-organisms Around Us",
+    "Micro-organisms in Action",
+    "Micro-organisms and Better Health",
+    "Aquatic Habitats",
+    "Terrestrial Habitats",
+    "Reproduction in Unicellular Organisms and Invertebrates"
+  ],
+
+  SSS2:[
+    "Classification of Plants",
+    "Digestive Systems",
+    "Transport Systems",
+    "Respiratory Systems",
+    "Excretory Systems",
+    "Nutrient Cycling in Nature",
+    "Ecological Management",
+    "Conservation of Natural Resources",
+    "Pests and Diseases of Crops",
+    "Reproductive Systems in Vertebrates",
+    "Reproductive Systems in Plants",
+    "Pollination in Plants"
+  ],
+
+  SSS3:[
+    "Regulation of Internal Environment",
+    "Nervous Co-ordination",
+    "Sense Organs",
+    "Ecology of Population",
+    "Balance in Nature",
+    "Reproductive Systems and Reproduction in Humans",
+    "Development of New Seeds",
+    "Fruits",
+    "Reproductive Behaviours",
+    "Biology of Heredity (Genetics)",
+    "Variation and Evolution",
+    "Adaptation for Survival",
+    "Evolution"
+  ]
+
+};
+
+
+function setLevel(level, button){
+
+  currentLevel = level;
+
+  document.querySelectorAll(".tabs button").forEach(function(btn){
+    btn.classList.remove("active");
+  });
+
+  if(button){
+    button.classList.add("active");
+  }
+
+  renderTopics();
+}
+
+
+function renderTopics(){
+
+  const grid = document.getElementById("topicGrid");
+
+  if(!grid) return;
+
+  const searchBox = document.getElementById("topicSearch");
+
+  const search = searchBox
+    ? searchBox.value.toLowerCase()
+    : "";
+
+  grid.innerHTML = "";
+
+  const list = topics[currentLevel].filter(function(topic){
+    return topic.toLowerCase().includes(search);
+  });
+
+  list.forEach(function(topic,index){
+
+    const card = document.createElement("div");
+
+    card.className = "topic";
+
+    card.innerHTML = `
+      <div class="topic-number">
+        ${currentLevel} • ${index + 1}
+      </div>
+
+      <h3>${escapeHTML(topic)}</h3>
+
+      <p>
+        Tap to learn this topic with BioTutor AI.
+      </p>
+    `;
+
+    card.onclick = function(){
+
+      showPage("tutor");
+
+      const input = document.getElementById("question");
+
+      if(input){
+        input.value =
+          "Teach me " +
+          topic +
+          " comprehensively for " +
+          currentLevel +
+          ". Include the definition, main concepts, examples, importance, possible diagrams, common mistakes and WAEC/NECO examination points.";
+
+        sendQuestion();
+      }
+
+    };
+
+    grid.appendChild(card);
+
+  });
+
+}
+
+
+/* ================================
+   CHAT
+================================ */
+
+function addMessage(type,text){
+
+  const chat = document.getElementById("chat");
+
+  if(!chat) return;
+
+  const row = document.createElement("div");
+
+  row.className = "message " + type;
+
+  const bubble = document.createElement("div");
+
+  bubble.className = "bubble";
+
+  bubble.textContent = text;
+
+  row.appendChild(bubble);
+
+  chat.appendChild(row);
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+
+function showThinking(){
+
+  const chat = document.getElementById("chat");
+
+  if(!chat) return;
+
+  const thinking = document.createElement("div");
+
+  thinking.id = "thinking";
+
+  thinking.className = "thinking";
+
+  thinking.textContent =
+    "BioTutor is thinking... 🧠";
+
+  chat.appendChild(thinking);
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+
+function removeThinking(){
+
+  const thinking =
+    document.getElementById("thinking");
+
+  if(thinking){
+    thinking.remove();
+  }
+
+}
+
+
+/* ================================
+   ONE AI BRAIN
+================================ */
+
+async function askBioTutor(question){
+
+  const response = await fetch(
+    API_URL + "/ask",
+    {
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        question:
+          SYSTEM_PROMPT +
+          "\n\nStudent question:\n" +
+          question
+      })
+    }
+  );
+
+  if(!response.ok){
+    throw new Error(
+      "AI server error: " + response.status
+    );
+  }
+
+  const data = await response.json();
+
+  return (
+    data.answer ||
+    data.response ||
+    data.message ||
+    "I couldn't get an answer right now."
+  );
+
+}
+
+
+/* ================================
+   SEND QUESTION
+================================ */
+
+async function sendQuestion(){
+
+  const input =
+    document.getElementById("question");
+
+  if(!input) return;
+
+  const question = input.value.trim();
+
+  if(!question){
+    return;
+  }
+
+  addMessage("user",question);
+
+  input.value = "";
+
+  showThinking();
+
+  try{
+
+    const answer =
+      await askBioTutor(question);
+
+    removeThinking();
+
+    addMessage("ai",answer);
+
+    updateStats(2);
+
+  }catch(error){
+
+    console.error(error);
+
+    removeThinking();
+
+    addMessage(
+      "ai",
+      "⚠️ I couldn't connect to the BioTutor AI server. Please check your internet connection and try again."
+    );
+
+  }
+
+}
+
+
+function askQuick(question){
+
+  showPage("tutor");
+
+  const input =
+    document.getElementById("question");
+
+  if(input){
+    input.value = question;
+    sendQuestion();
+  }
+
+}
+
+
+function handleEnter(event){
+
+  if(
+    event.key === "Enter" &&
+    !event.shiftKey
+  ){
+
+    event.preventDefault();
+
+    sendQuestion();
+
+  }
+
+}
+
+
+function clearChat(){
+
+  const chat =
+    document.getElementById("chat");
+
+  if(!chat) return;
+
+  chat.innerHTML = `
+    <div class="message ai">
+      <div class="bubble">
+        👋🏽 Chat cleared.
+
+        I'm ready for your next Biology question. 🧬
+      </div>
+    </div>
+  `;
+
+}
+
+
+/* ================================
+   VOICE
+================================ */
+
+function startVoice(){
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if(!SpeechRecognition){
+
+    addMessage(
+      "ai",
+      "🎤 Voice input is not supported by this browser. Try Chrome."
+    );
+
+    return;
+  }
+
+  const recognition =
+    new SpeechRecognition();
+
+  recognition.lang = "en-NG";
+
+  recognition.interimResults = false;
+
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = function(){
+
+    addMessage(
+      "ai",
+      "🎤 I'm listening..."
+    );
+
+  };
+
+  recognition.onresult = function(event){
+
+    const text =
+      event.results[0][0].transcript;
+
+    const input =
+      document.getElementById("question");
+
+    if(input){
+      input.value = text;
+    }
+
+  };
+
+  recognition.onerror = function(){
+
+    addMessage(
+      "ai",
+      "I couldn't hear that clearly. Try again."
+    );
+
+  };
+
+  recognition.start();
+
+}
+
+
+/* ================================
+   IMAGE
+================================ */
+
+function attachImage(input){
+
+  if(
+    !input.files ||
+    !input.files[0]
+  ){
+    return;
+  }
+
+  const file = input.files[0];
+
+  const preview =
+    document.getElementById("imagePreview");
+
+  if(preview){
+
+    preview.classList.remove("hidden");
+
+    preview.textContent =
+      "📷 Image attached: " +
+      file.name +
+      ". Type your question about it.";
+
+  }
+
+}
+
+
+/* ================================
+   QUIZ
+================================ */
+
+function startQuiz(){
+
+  showPage("tutor");
+
+  const input =
+    document.getElementById("question");
+
+  if(!input) return;
+
+  input.value = `
+Start a Biology quiz for a Nigerian secondary-school student.
+
+Give me ONE multiple-choice Biology question.
+
+Use A, B, C and D.
+
+Do not reveal the answer yet.
+
+Wait for my answer.
+
+After I answer, tell me whether I am correct, explain why, then give me the next question.
+
+Mix SSS1, SSS2 and SSS3 Biology topics.
+Include WAEC/NECO-style questions.
+`;
+
+  sendQuestion();
+
+}
+
+
+/* ================================
+   PROGRESS
+================================ */
+
+let stats = JSON.parse(
+  localStorage.getItem("biotutorStats") ||
+  '{"topics":0,"questions":0,"points":0,"streak":1}'
+);
+
+
+function updateStats(points){
+
+  stats.questions =
+    Number(stats.questions || 0) + 1;
+
+  stats.points =
+    Number(stats.points || 0) + points;
+
+  localStorage.setItem(
+    "biotutorStats",
+    JSON.stringify(stats)
+  );
+
+  updateProgress();
+
+}
+
+
+function updateProgress(){
+
+  const topicsStudied =
+    document.getElementById("topicsStudied");
+
+  const questionsAsked =
+    document.getElementById("questionsAsked");
+
+  const points =
+    document.getElementById("points");
+
+  const streak =
+    document.getElementById("streak");
+
+  if(topicsStudied)
+    topicsStudied.textContent =
+      stats.topics || 0;
+
+  if(questionsAsked)
+    questionsAsked.textContent =
+      stats.questions || 0;
+
+  if(points)
+    points.textContent =
+      stats.points || 0;
+
+  if(streak)
+    streak.textContent =
+      stats.streak || 1;
+
+  const fill =
+    document.getElementById("progressFill");
+
+  if(fill){
+
+    const percentage =
+      Math.min(
+        100,
+        Math.round(
+          ((stats.topics || 0) / 43) * 100
+        )
+      );
+
+    fill.style.width =
+      percentage + "%";
+  }
+
+}
+
+
+/* ================================
+   FOUNDER
+================================ */
+
+function openFounder(show = true){
+
+  const modal =
+    document.getElementById("founderModal");
+
+  if(!modal) return;
+
+  if(show){
+    modal.classList.remove("hidden");
+  }else{
+    modal.classList.add("hidden");
+  }
+
+}
+
+
+function closeFounder(event){
+
+  if(
+    event &&
+    event.target.id !== "founderModal"
+  ){
+    return;
+  }
+
+  openFounder(false);
+
+}
+
+
+/* ================================
+   DRAWING BOARD
+================================ */
+
+let drawing = false;
+let canvas;
+let ctx;
+
+
+function openDrawing(){
+
+  const modal =
+    document.getElementById("drawingModal");
+
+  if(modal){
+    modal.classList.remove("hidden");
+  }
+
+  setupCanvas();
+
+}
+
+
+function closeDrawing(event){
+
+  if(
+    event &&
+    event.target.id !== "drawingModal"
+  ){
+    return;
+  }
+
+  const modal =
+    document.getElementById("drawingModal");
+
+  if(modal){
+    modal.classList.add("hidden");
+  }
+
+}
+
+
+function setupCanvas(){
+
+  canvas =
+    document.getElementById("canvas");
+
+  if(!canvas) return;
+
+  ctx =
+    canvas.getContext("2d");
+
+  ctx.lineWidth = 4;
+
+  ctx.lineCap = "round";
+
+  canvas.onpointerdown =
+    function(event){
+
+      drawing = true;
+
+      const rect =
+        canvas.getBoundingClientRect();
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        (event.clientX - rect.left) *
+          (canvas.width / rect.width),
+
+        (event.clientY - rect.top) *
+          (canvas.height / rect.height)
+      );
+
+    };
+
+
+  canvas.onpointermove =
+    function(event){
+
+      if(!drawing) return;
+
+      const rect =
+        canvas.getBoundingClientRect();
+
+      ctx.lineTo(
+        (event.clientX - rect.left) *
+          (canvas.width / rect.width),
+
+        (event.clientY - rect.top) *
+          (canvas.height / rect.height)
+      );
+
+      ctx.stroke();
+
+    };
+
+
+  canvas.onpointerup =
+    function(){
+      drawing = false;
+    };
+
+
+  canvas.onpointerleave =
+    function(){
+      drawing = false;
+    };
+
+}
+
+
+function clearCanvas(){
+
+  if(!canvas) return;
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+}
+
+
+function saveDrawing(){
+
+  if(!canvas) return;
+
+  const link =
+    document.createElement("a");
+
+  link.download =
+    "BioTutor-Biology-Drawing.png";
+
+  link.href =
+    canvas.toDataURL();
+
+  link.click();
+
+}
+
+
+/* ================================
+   SAFE TEXT
+================================ */
+
+function escapeHTML(value){
+
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+}
+
+
+/* ================================
+   START APP
+================================ */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function(){
+
+    renderTopics();
+
+    updateProgress();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
 <!-- DRAWING MODAL -
