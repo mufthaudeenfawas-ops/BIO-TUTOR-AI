@@ -55,12 +55,27 @@ button{cursor:pointer}
   align-items:center;
   gap:10px;
 }
-.logo{
-  width:43px;height:43px;border-radius:14px;
-  display:grid;place-items:center;
-  background:linear-gradient(135deg,#35e08b,#238bff);
-  font-size:23px;
-  box-shadow:0 8px 30px rgba(53,224,139,.18);
+.logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: radial-gradient(circle, #102d29, #03120f);
+  border: 2px solid #35e08b;
+  box-shadow: 0 0 18px rgba(53,224,139,.45);
+}
+.logo-ai {
+  color: white;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.logo-bio {
+  font-size: 19px;
+}
 }
 .brand h1{font-size:18px}
 .brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
