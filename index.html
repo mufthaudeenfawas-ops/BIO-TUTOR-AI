@@ -56,26 +56,29 @@ button{cursor:pointer}
   gap:10px;
 }
 .logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  background: radial-gradient(circle, #102d29, #03120f);
-  border: 2px solid #35e08b;
-  box-shadow: 0 0 18px rgba(53,224,139,.45);
+  width:52px;
+  height:52px;
+  flex:0 0 52px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  background:linear-gradient(135deg,#35e08b,#238bff);
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 8px 25px rgba(53,224,139,.3);
 }
+
 .logo-ai {
-  color: white;
-  font-size: 20px;
-  font-weight: 900;
+  color:#07111f;
+  font-size:17px;
+  font-weight:900;
+  letter-spacing:-1px;
 }
 
 .logo-bio {
-  font-size: 19px;
-}
+  font-size:19px;
+  line-height:1;
 }
 .brand h1{font-size:18px}
 .brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
