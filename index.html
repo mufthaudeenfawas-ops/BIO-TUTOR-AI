@@ -424,8 +424,38 @@ footer strong{color:white}
   <div class="header-inner">
     <div class="brand">
       <div class="logo">
-  <span class="logo-ai">AI</span>
-  <span class="logo-bio">🧬</span>
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <circle cx="50" cy="50" r="46"
+      fill="#031b1b" stroke="#00eeb5"
+      stroke-width="2.5" filter="url(#glow)"/>
+
+    <text x="9" y="59"
+      fill="white" font-size="39"
+      font-weight="900">AI</text>
+
+    <g fill="none" stroke="#35f58b"
+       stroke-width="3" filter="url(#glow)">
+      <path d="M58 10 C90 25 48 42 76 57 S86 80 62 94"/>
+      <path d="M75 10 C47 25 89 42 61 57 S51 80 76 94"/>
+    </g>
+
+    <g stroke="#38ee80" fill="#16bd55" stroke-width="1.5">
+      <path d="M65 24 Q85 5 82 30 Q72 35 65 24Z"/>
+      <path d="M74 42 Q96 29 86 52 Q78 54 74 42Z"/>
+      <path d="M66 65 Q45 48 49 72 Q59 79 66 65Z"/>
+      <path d="M68 82 Q89 68 83 91 Q75 96 68 82Z"/>
+    </g>
+  </svg>
       </div>
       <div>
         <h1>BioTutor AI</h1>
